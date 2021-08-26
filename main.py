@@ -21,6 +21,5 @@ def output(inpt):
     result = parse(inpt)
     return render_template('output.html', input=result)
 
-if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=80)
+if __name__ == "__main__":    
     #app.run(debug=True)#para que se actualice al detectar cambios
