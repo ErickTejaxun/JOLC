@@ -22,4 +22,4 @@ def output(inpt):
     return render_template('output.html', input=result)
 
 if __name__ == "__main__":    
-    #app.run(debug=True)#para que se actualice al detectar cambios
+    app.run(debug=True)#para que se actualice al detectar cambios
