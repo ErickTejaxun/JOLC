@@ -3,18 +3,21 @@
 
 {% block content %}
 <main role="main" class="container">
-    <div class="row ">        
+    <div class="row-cols-10">
+        <h1 class="display-4">Área de edición</h1>
+    </div>
+    <div class="row row-cols-10">                
         <form action="#" method="POST">
             <div class="mb-3">
-                <label for="default" class="form-label">Input:</label>
+                <label for="default" class="form-label"></label>
                 <textarea class="codemirror-textarea form-control" name="inpt" id="default" cols="30" rows="10">{{initial}}</textarea>
-                <div class="form-text">Edición</div>
+                <div id="posicion" name="posicion" class="form-text">Posición</div>
             </div>
-            <button type="submit" class="btn btn-primary">Submit</button>
+            <button type="submit" class="btn btn-primary">Analizar</button>
         </form>        
     </div>   
     <div class="row row-cols-10">        
-        <lalel for="default" class="form label">Salida</lalel>
+        <h1 class="display-4">Consola de salida</h1>
         <textarea class="codemirror-textarea" name="output" id="output" cols="30" rows="10"></textarea>              
     </div>       
 </main>
