@@ -6,19 +6,43 @@
     <div class="row-cols-10">
         <h1 class="display-4">Área de edición</h1>
     </div>
-    <div class="row row-cols-10">                
-        <form action="#" method="POST">
-            <div class="mb-3">
-                <label for="default" class="form-label"></label>
-                <textarea class="codemirror-textarea form-control" name="inpt" id="default" cols="30" rows="10">{{initial}}</textarea>
-                <div id="posicion" name="posicion" class="form-text">Posición</div>
-            </div>
-            <button type="submit" class="btn btn-primary">Analizar</button>
-        </form>        
+    <div class="row row-cols-10">                        
+        <div class="mb-3">
+            <label for="default" class="form-label"></label>
+            <textarea class="codemirror-textarea form-control" name="inpt" id="inpt" cols="30" rows="10">{{initial}}</textarea>
+            <div id="posicion" name="posicion" class="form-text">Posición</div>
+        </div>
+        <button class="btn btn-primary" onclick="analyze()">Analizar</button>        
     </div>   
     <div class="row row-cols-10">        
         <h1 class="display-4">Consola de salida</h1>
         <textarea class="codemirror-textarea" name="output" id="output" cols="30" rows="10"></textarea>              
     </div>       
 </main>
+
+<script src="{{ url_for('static',filename='codemirror/lib/codemirror.js') }}"></script>
+<script src="{{ url_for('static',filename='codemirror/mode/julia/julia.js') }}"></script>
+<script src="{{ url_for('static',filename='codemirror/mode/shell/shell.js') }}"></script>
+<script src="{{ url_for('static',filename='codemirror/mode/javascript/javascript.js') }}"></script>
+<script src="{{ url_for('static',filename='js/editor_conf.js') }}"></script>
+
+
+<script type="text/javascript">    
+    function analyze()
+    {
+        //var code = $("#inpt").val();
+        var code = editorInput.getValue();
+        $.ajax({
+            type: "POST",
+            url: '/analyze',
+            dataType: "json",
+            data: {inpt:code},            
+            success: function(response)
+            {
+                editorOutput.setValue(response.output);                
+                $("#output").val(response.output);
+            }        
+        });
+    }
+</script><script type=""
 {% endblock %}

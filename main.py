@@ -1,4 +1,4 @@
-from flask import Flask, redirect, url_for, render_template, request
+from flask import Flask, redirect, url_for, render_template, request, jsonify
 from gramatica import parse
 app = Flask(__name__)
 
@@ -9,13 +9,20 @@ def home():
 @app.route("/analyze", methods=["POST","GET"])
 def analyze():
     if request.method == "POST":
-        inpt = request.form["inpt"]
-        inpt=inpt.replace("/","aa11a223")
-        return redirect(url_for("output", inpt=inpt))
+        inpt = request.form["inpt"]        
+        result = parse(inpt)
+        return jsonify(output=result)        
     else:
-        return render_template('analyze.html', initial="3*2*(2+5)==15|2+3*4/(3+1)==10 & 6*7/(8+1)==10")
+        return render_template('analyze.html', initial="#JOLC Compiladores 2 USAC 2021")
 
-@app.route('/output/<inpt>')
+@app.route("/reports", methods=["POST", "GET"])
+def reports():
+    if request.method == "POST":
+        inpt = request.form["valor"]
+    else:
+        return render_template('reports.html')
+
+@app.route('/output/')
 def output(inpt):
     inpt=inpt.replace("aa11a223","/")
     result = parse(inpt)

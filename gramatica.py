@@ -3,7 +3,7 @@
 # USAC 2021
 # --------------------
 
-# primero definimos los nombres de los tokens
+# tokens definition
 tokens = (
     'PARIZQ',
     'PARDER',
@@ -23,10 +23,6 @@ tokens = (
     'RFALSE'
 )
 
-#para definir los patrones de los tokens podemos agregar
-#el prefijo 't_'
-#PARA ESPECIFICAR UNA EXPRESION REGULAR DEBEMOS HACER USO DE 'r'
-
 t_PARIZQ = r'\('
 t_PARDER = r'\)'
 t_MAS = r'\+'
@@ -42,13 +38,29 @@ t_MEN = r'<'
 t_RTRUE=r'true'
 t_RFALSE=r'false'
 
-#Otra forma de definir patrones es con funciones:
+
+
+# ignored characters, tab and space
+t_ignore = " \t"
+
+
+def t_COMMENT_MULTI(t):
+    r'(?s)\#=.*?=\#'
+    #print("Comentario multilinea: " + t.value)
+    pass
+
+def t_COMMENT(t):
+    r'\#.*'
+    #print("Comentario  " + t.value)
+    pass
+
 
 def t_DECIMAL(t):
     r'\d+\.\d+'
     try:
         t.value = float(t.value)
     except ValueError:
+        # log error 
         print("Float value too large %d", t.value)
         t.value = 0
     return t
@@ -58,13 +70,10 @@ def t_ENTERO(t):
     try:
         t.value = int(t.value)
     except ValueError:
+        # log error 
         print("Integer value too large %d", t.value)
         t.value = 0
     return t
-
-
-#Caracteres ignorados
-t_ignore = " \t"
 
 
 def t_newline(t):
@@ -72,15 +81,18 @@ def t_newline(t):
     t.lexer.lineno += t.value.count("\n")
     
 def t_error(t):
+    ## Add error handling. Mark this error how lexical
     print("Illegal character '%s'" % t.value[0])
     t.lexer.skip(1)
 
-# Construyendo el analizador léxico
+
+
+# Building scanner.
 import ply.lex as lex
 lexer = lex.lex()
 
 
-# Asociación de operadores y precedencia
+# Precedence and asociation
 precedence = (
     ('left', 'OR'),
     ('left', 'AND'),
@@ -220,7 +232,8 @@ def parse(input):
     contTemp=1
     contEtq=1
     cad=parser.parse(input)
-    return str(cad[2])+'\n'+str(cad[0])+':\r\n'+'ETIQUETA_VERDADERA'+'\r\n\n'+str(cad[1])+':\r\n'+'ETIQUETA_FALSA\r\n'
+    return str(cad)
+    #return str(cad[2])+'\n'+str(cad[0])+':\r\n'+'ETIQUETA_VERDADERA'+'\r\n\n'+str(cad[1])+':\r\n'+'ETIQUETA_FALSA\r\n'
 
 
 

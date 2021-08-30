@@ -1,5 +1,5 @@
 // referencia a codemirror: https://codemirror.net/doc/manual.html
-var editorInput = CodeMirror.fromTextArea(document.getElementById("default"),{
+var editorInput = CodeMirror.fromTextArea(document.getElementById("inpt"),{
     theme: "eclipse",
     mode:  "julia",    
     lineNumbers: true,
