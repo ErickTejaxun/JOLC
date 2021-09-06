@@ -1,5 +1,10 @@
 from flask import Flask, redirect, url_for, render_template, request, jsonify
 from gramatica import parse
+from singlenton import global_utils, Error
+import json
+from json import JSONEncoder
+import AST as AST
+
 app = Flask(__name__)
 
 @app.route("/")# de esta forma le indicamos la ruta para acceder a esta pagina. 'Decoramos' la funcion. 
@@ -9,7 +14,7 @@ def home():
 @app.route("/analyze", methods=["POST","GET"])
 def analyze():
     if request.method == "POST":
-        inpt = request.form["inpt"]        
+        inpt = request.form["inpt"] 
         result = parse(inpt)
         return jsonify(output=result)        
     else:
@@ -21,6 +26,18 @@ def reports():
         inpt = request.form["valor"]
     else:
         return render_template('reports.html')
+
+@app.route("/errors" , methods=["POST"])
+def errors():
+    if request.method == "POST":
+        errores = []
+        for err in global_utils._errors:
+            errores.append(json.loads(err.toJSON()))
+        print('Errores')
+        print(errores)
+        return jsonify(errors=errores)
+
+
 
 @app.route('/output/')
 def output(inpt):

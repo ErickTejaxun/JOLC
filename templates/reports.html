@@ -47,8 +47,8 @@
                   <h3 class="display-4">Lista de errores</h3>
                 </div>
                 <div class="row">
-                  <table id="tablaErrores">
-                    <thead>
+                  <table id="tablaErrores"  class="cell-border compact stripe">
+                    <thead class="thead-dark">
                       <tr>
                         <th>#</th>
                         <th>ID</th>
@@ -59,6 +59,17 @@
                         <th>Archivo</th>                        
                       </tr>
                     </thead>
+                    <tfoot class="thead-dark">
+                      <tr>
+                        <th>#</th>
+                        <th>ID</th>
+                        <th>Tipo</th>
+                        <th>Descripción</th>
+                        <th>Línea</th>
+                        <th>Columnas</th>
+                        <th>Archivo</th>                        
+                      </tr>
+                    </tfoot>                    
                   </table>
                 </div>
               </div>
@@ -73,13 +84,35 @@
   var tablaSimbolos = $('#tablaSimbolos').DataTable({
     "paging":   false,
     "ordering": false,
-    "info":     false
+    "info":     false   
   });
 
   var tablaErrores = $('#tablaErrores').DataTable({
-    "paging":   false,
-    "ordering": false,
-    "info":     false
+    "paging":   true,            
+    "scrollX": true,
+    "select": true,
+    "search": false,
+    "dom":'<"toolbar">frtip',
+    "ajax": 
+    {
+      "url": "/errors",
+      "type": "POST",
+      "dataSrc": function(data)
+      {        
+        console.log(data);
+        return data.errors;
+      }
+    },        
+    "columns": 
+      [
+        { "data": "index"},
+        { "data": "id" },
+        { "data": "type"},
+        { "data": "desc"},
+        { "data": "line"},
+        { "data": "column"},
+        { "data": "file"}
+      ]
   });  
 </script>
 {% endblock %}

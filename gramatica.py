@@ -2,6 +2,7 @@
 # Erick Tejaxún
 # USAC 2021
 # --------------------
+from singlenton import global_utils
 
 # tokens definition
 tokens = (
@@ -20,9 +21,14 @@ tokens = (
     'DECIMAL',
     'ENTERO',
     'RTRUE',
-    'RFALSE'
+    'RFALSE',
+    'IMPRIMIR',
+    #----------->
+    'PUNTOCOMA'
+
 )
 
+t_PUNTOCOMA=r';'
 t_PARIZQ = r'\('
 t_PARDER = r'\)'
 t_MAS = r'\+'
@@ -37,6 +43,7 @@ t_MAY = r'>'
 t_MEN = r'<'
 t_RTRUE=r'true'
 t_RFALSE=r'false'
+t_IMPRIMIR = 'println'
 
 
 
@@ -70,19 +77,20 @@ def t_ENTERO(t):
     try:
         t.value = int(t.value)
     except ValueError:
-        # log error 
+        # log error         
         print("Integer value too large %d", t.value)
         t.value = 0
     return t
 
 
-def t_newline(t):
+def t_line(t):
     r'\n+'
     t.lexer.lineno += t.value.count("\n")
     
 def t_error(t):
     ## Add error handling. Mark this error how lexical
-    print("Illegal character '%s'" % t.value[0])
+    global_utils.registryLexicalError(t.value[0],'Caracter ilegal.', t.lexer.lineno, t.lexer.lineno)
+    # print("Illegal character '%s'" % t.value[0])
     t.lexer.skip(1)
 
 
@@ -90,6 +98,8 @@ def t_error(t):
 # Building scanner.
 import ply.lex as lex
 lexer = lex.lex()
+
+import AST as AST
 
 
 # Precedence and asociation
@@ -100,127 +110,37 @@ precedence = (
     ('nonassoc', 'MEN', 'MAY'),
     ('left','MAS','MENOS'),
     ('left','POR','DIV'),
-    ('right','UMENOS'),
+    #('right','UMENOS'),
     ('left','PARIZQ', 'PARDER'),
     )
 
+def p_raiz(t):
+    '''root : imprimir'''
+    tablaSimbolosGlobal = AST.TablaSimbolo()             
+    t[1].ejecutar(tablaSimbolosGlobal)
+    t[0] = tablaSimbolosGlobal.consola
+
+#def p_lista_instrucciones(t):
+#    '''lista_instrucciones : lista_instrucciones imprimir'''    
+
 # Definicion de la gramática
-contTemp=1
-contEtq=1
-def newTemp():
-    global contTemp
-    cad = 'T'+str(contTemp)
-    contTemp+=1
-    return cad
-
-def newEtq():
-    global contEtq
-    cad = 'L' + str(contEtq)
-    contEtq+=1
-    return cad
+def p_instruccion_imprimir(t):
+    '''imprimir : IMPRIMIR PARIZQ e PARDER PUNTOCOMA '''
+    t[0]= AST.Imprimir(t[3], t.lineno, t.lexpos)
 
 
-def p_expresion_l_1(t):
-    '''l  :     l   OR  m'''
-    lv=str(t[1][0])+', '+str(t[3][0])
-    lf=str(t[3][1])
-    t[0]=[lv, lf, str(t[1][2])+str(t[1][1])+ ':\r\n'+str(t[3][2])]
-
-def p_expresion_l_2(t):
-    'l  :   m'
-    t[0]=t[1]
-
-def p_expresion_m_1(t):
-    'm  :   m   AND r'
-    lv=str(t[3][0])
-    lf=str(t[1][1])+ ', '+str(t[3][1])
-    t[0]=[lv, lf, str(t[1][2]) + str(t[1][0]) + ':\r\n'+ str(t[3][2])]
-
-def p_expresion_m_2(t):
-    'm  :   r'
-    t[0]=t[1]
-
-def p_expresion_r_1(t):
-    'r  :   e   MAY e'
-    lv=newEtq()
-    lf=newEtq()
-    t[0]=[lv, lf, str(t[1][1])+str(t[3][1])+' if '+ str(t[1][0])+ ' > '+ str(t[3][0]) + ' goto '+lv+'\r\n'+' goto '+lf+'\r\n']
-
-
-def p_expresion_r_2(t):
-    'r  :   e   MEN e'
-
-    lv=newEtq()
-    lf=newEtq()
-    cad=str(t[1][1])+str(t[3][1])+' if '+ str(t[1][0])+ ' < '+ str(t[3][0]) + ' goto '+lv+'\r\n'+' goto '+lf+'\r\n'
-    #print(cad)
-    t[0]=[lv, lf, cad]
-
-
-def p_expresion_r_3(t):
-    'r  :   e   IGIG e'
-    lv=newEtq()
-    lf=newEtq()
-    t[0]=[lv, lf, str(t[1][1])+str(t[3][1])+' if '+ str(t[1][0])+ ' == '+ str(t[3][0]) + ' goto '+lv+'\r\n'+' goto '+lf+'\r\n']
-
-def p_expresion_r_4(t):
-    'r  :   e   DIFDE e'
-    lv=newEtq()
-    lf=newEtq()
-    t[0]=[lv, lf, str(t[1][1])+str(t[3][1])+' if '+ str(t[1][0])+ ' != '+ str(t[3][0]) + ' goto '+lv+'\r\n'+' goto '+lf+'\r\n']
-
-def p_expresion_r_5(t):
-    'r  :   RTRUE'
-    lv=newEtq()
-    lf=newEtq()
-    t[0]=[lv, lf, 'if 1 == 1 goto '+lv + '\r\n' +'goto '+lf+'\r\n']
-
-def p_expresion_r_6(t):
-    'r  :   RFALSE'
-
-    lv=newEtq()
-    lf=newEtq()
-    t[0]=[lv, lf, 'if 1 == 0 goto '+lv + '\r\n' +'goto '+lf+'\r\n']
-
-
-#NOTA:  antes de generar C3D se debe de validar que 'r' siempre tome valores booleanos pero para evitar esa validacion
-#       por ser este un ejemplo pequeño, así que lo pongo asi.
-def p_expresion_r_7(t):
-    'r  :   e'
-
-    lv=newEtq()
-    lf=newEtq()
-    t[0]=[lv, lf, str(t[1][1])]
-
-
-
-
-def p_expresion_binaria(t):
-    '''e  :     e   MAS     e
-            |   e   MENOS   e
-            |   e   POR     e
-            |   e   DIV     e '''
-
-    temp=newTemp()
-    cad=str(t[1][1])+str(t[3][1])+temp+' = '+str(t[1][0])+t[2]+str(t[3][0])+'\r\n'
-    #print(cad)
-    t[0]=[temp, cad]
-
-def p_expresion_unaria(t):
-    '''e  :     MENOS   e   %prec   UMENOS'''
-    temp=newTemp()
-    t[0]=[temp, t[2][1]+temp+' = 0 - '+t[2][0]+'\r\n']
-
-def p_expresion_agrupacion(t):
+def p_expresion_parentesis(t):
     'e : PARIZQ e PARDER'
-    t[0]=t[2] #copio los list
+    t[0]=t[2]
 
-def p_expresion_number(t):
-    '''e    : ENTERO
-            | DECIMAL'''
-    t[0]=[t[1], ''] #creo un LIST de 2 elementos
-    #print(t[0])
-def p_error(t):
+## Valores literales
+def p_expresion_entero(t):
+    '''e    : ENTERO'''
+    t[0]=  AST.Entero(t[1], t.lineno, t.lexpos)    
+
+
+def p_error(t):     
+    global_utils.registrySyntaxError(str(t),'Error de sintaxis', t.lineno, t.lexpos)
     print("Error sintáctico en '%s'" % str(t))
 
 import ply.yacc as yacc
