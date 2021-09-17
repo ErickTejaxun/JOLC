@@ -234,7 +234,183 @@ class Resta(Expresion):
             self.valor = int(valorI) - int(valorD)
             return self.valor
         
-        return None        
+        return None  
+
+
+class Multiplicacion(Expresion):
+    def __init__(self, expresionI, expresionD, linea, columna):
+        self.expresionI = expresionI
+        self.expresionD = expresionD
+        self.linea = linea
+        self.columna = columna
+    
+    def getTipo(self, entorno):
+        tipoI = self.expresionI.getTipo(entorno)
+        tipoD = self.expresionD.getTipo(entorno)
+
+        ## Si ambos son string se hace una concatenacion
+        if(tipoI.esCadena() and tipoD.esCadena()):
+            return Tipo(TipoPrimitivo.STRING)
+
+        if (tipoI.esNumerico() and tipoD.esNumerico()):
+            if (tipoI.esFloat() or tipoD.esFloat()):
+                return Tipo(TipoPrimitivo.FLOAT)
+            return Tipo(TipoPrimitivo.ENTERO)
+
+        global_utils.registrySemanticError('*','Error Semántico. No es posible realizar la operación ' + tipoI + " * " + tipoD , self.linea, self.columna)
+        return Tipo(TipoPrimitivo.ERROR)        
+    
+    def getValor(self, entorno):
+        tipo_actual = self.getTipo(entorno)
+
+        if tipo_actual.esError():
+            return None
+            
+        valorI = self.expresionI.getValor(entorno)
+        valorD = self.expresionD.getValor(entorno)            
+
+        if tipo_actual.esCadena():
+            self.valor = str(valorI) + str(valorD)
+            return self.valor
+
+        if tipo_actual.esFloat():
+            self.valor = float(valorI) * float(valorD)
+            return self.valor
+            
+        if tipo_actual.esEntero():            
+            self.valor = int(valorI) * int(valorD)
+            return self.valor
+        
+        return None 
+
+
+class Division(Expresion):
+    def __init__(self, expresionI, expresionD, linea, columna):
+        self.expresionI = expresionI
+        self.expresionD = expresionD
+        self.linea = linea
+        self.columna = columna
+    
+    def getTipo(self, entorno):
+        tipoI = self.expresionI.getTipo(entorno)
+        tipoD = self.expresionD.getTipo(entorno)
+
+        if (tipoI.esNumerico() and tipoD.esNumerico()):
+            return Tipo(TipoPrimitivo.FLOAT)
+
+        global_utils.registrySemanticError('/','Error Semántico. No es posible realizar la operación ' + tipoI + " / " + tipoD , self.linea, self.columna)
+        return Tipo(TipoPrimitivo.ERROR)        
+    
+    def getValor(self, entorno):
+        tipo_actual = self.getTipo(entorno)
+
+        if tipo_actual.esError():
+            return None
+            
+        if tipo_actual.esFloat():
+            valorI = self.expresionI.getValor(entorno)
+            valorD = self.expresionD.getValor(entorno)
+            self.valor = float(valorI) / float(valorD)
+            return self.valor
+            
+        if tipo_actual.esEntero():            
+            valorI = self.expresionI.getValor(entorno)
+            valorD = self.expresionD.getValor(entorno)
+            self.valor = int(valorI) / int(valorD)
+            return self.valor
+        
+        return None  
+
+class Potencia(Expresion):
+    def __init__(self, expresionI, expresionD, linea, columna):
+        self.expresionI = expresionI
+        self.expresionD = expresionD
+        self.linea = linea
+        self.columna = columna
+    
+    def getTipo(self, entorno):
+        tipoI = self.expresionI.getTipo(entorno)
+        tipoD = self.expresionD.getTipo(entorno)
+
+        if (tipoI.esNumerico() and tipoD.esNumerico()):
+            if(tipoI.esFloat() or tipoD.esFloat()):
+                return Tipo(TipoPrimitivo.FLOAT)
+            else:
+                return Tipo(TipoPrimitivo.ENTERO)
+
+        if (tipoI.esCadena() and tipoD.esEntero()):
+            return Tipo(TipoPrimitivo.STRING)
+
+        global_utils.registrySemanticError('^','Error Semántico. No es posible realizar la operación ' + tipoI + " ^ " + tipoD , self.linea, self.columna)
+        return Tipo(TipoPrimitivo.ERROR)        
+    
+    def getValor(self, entorno):
+        tipo_actual = self.getTipo(entorno)
+
+        if tipo_actual.esError():
+            return None
+            
+        if tipo_actual.esFloat():
+            valorI = self.expresionI.getValor(entorno)
+            valorD = self.expresionD.getValor(entorno)
+            self.valor = float(pow(valorI, valorD))
+            return self.valor
+            
+        if tipo_actual.esEntero():            
+            valorI = self.expresionI.getValor(entorno)
+            valorD = self.expresionD.getValor(entorno)
+            self.valor = int(pow(valorI,valorD))
+            return self.valor
+
+        if tipo_actual.esCadena():
+            valorI = self.expresionI.getValor(entorno)
+            valorD = self.expresionD.getValor(entorno)
+            self.valor = '' 
+            contador = 0 
+            while ( contador < valorD):
+                self.valor = self.valor + str(valorI)
+                contador = contador + 1
+            return self.valor
+        
+        return None    
+
+class Modulo(Expresion):
+    def __init__(self, expresionI, expresionD, linea, columna):
+        self.expresionI = expresionI
+        self.expresionD = expresionD
+        self.linea = linea
+        self.columna = columna
+    
+    def getTipo(self, entorno):
+        tipoI = self.expresionI.getTipo(entorno)
+        tipoD = self.expresionD.getTipo(entorno)
+
+        if (tipoI.esNumerico() and tipoD.esNumerico()):
+            if (tipoI.esFloat() or tipoD.esFloat()):
+                return Tipo(TipoPrimitivo.FLOAT)
+            return Tipo(TipoPrimitivo.ENTERO)
+
+        global_utils.registrySemanticError('-','Error Semántico. No es posible realizar la operación ' + tipoI + " - " + tipoD , self.linea, self.columna)
+        return Tipo(TipoPrimitivo.ERROR)        
+    
+    def getValor(self, entorno):
+        tipo_actual = self.getTipo(entorno)
+
+        if tipo_actual.esError():
+            return None
+            
+        valorI = self.expresionI.getValor(entorno)
+        valorD = self.expresionD.getValor(entorno)
+
+        if tipo_actual.esFloat():            
+            self.valor = float(valorI) % float(valorD)
+            return self.valor
+            
+        if tipo_actual.esEntero():                        
+            self.valor = int(valorI) % int(valorD)
+            return self.valor
+        
+        return None                                  
         
 class Negativo(Expresion):
     def __init__(self, expresion, linea, columna):

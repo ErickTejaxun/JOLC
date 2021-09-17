@@ -20,11 +20,17 @@ def analyze():
         if raiz is not None:
             entornoGlobal  = AST.Entorno(None)
             raiz.ejecutar(entornoGlobal) 
-            return jsonify(output=entornoGlobal.tabla.consola)
+            if len(global_utils._errors)>0:
+                return jsonify(output=entornoGlobal.tabla.consola, errores=True)
+            else:
+                return jsonify(output=entornoGlobal.tabla.consola, errores=False)
         else:        
             salida = []
             salida.append('')
-            return jsonify(output=salida)
+            if len(global_utils._errors)>0:
+                return jsonify(output=salida, errores= True)
+            else:
+                return jsonify(output=salida, errores= False)
     else:
         return render_template('analyze.html', initial="#JOLC Compiladores 2 USAC 2021")
 

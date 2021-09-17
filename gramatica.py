@@ -14,6 +14,8 @@ tokens = (
     'MENOS',
     'POR',
     'DIV',
+    'POW',
+    'MODULO',
     'AND',
     'OR',
     'IGIG',
@@ -46,6 +48,8 @@ t_IGIG = r'=='
 t_DIFDE = r'!='
 t_MAY = r'>'
 t_MEN = r'<'
+t_POW = r'\^'
+t_MODULO = r'%'
 t_IMPRIMIR = 'println'
 
 
@@ -142,8 +146,8 @@ precedence = (
     ('nonassoc', 'MEN', 'MAY'),
     ('left','MAS','MENOS'),
     ('left','POR','DIV'),
-    #('right','UMENOS'),
-    ('left','PARIZQ', 'PARDER'),
+    ('right', 'UMINUS'),
+    ('left','PARIZQ', 'PARDER'),    
     )
 
 def p_raiz(t):
@@ -180,7 +184,7 @@ def p_expresion_parentesis(t):
 
 
 def p_expresion_negativo(t):
-    '''e : MENOS e'''
+    '''e : MENOS e  %prec UMINUS'''
     t[0] = AST.Negativo(t[2], t.lineno(1), 0)
 
 def p_expresion_suma(t):
@@ -190,9 +194,25 @@ def p_expresion_suma(t):
 def p_expresion_resta(t):
     '''e : e MENOS e'''
     t[0] = AST.Resta(t[1], t[3], t.lineno(1), 0)  
+
+def p_expresion_multiplicacion(t):
+    '''e : e POR e'''
+    t[0] = AST.Multiplicacion(t[1], t[3], t.lineno(1), 0) 
+
+def p_expresion_division(t):
+    '''e : e DIV e'''
+    t[0] = AST.Division(t[1], t[3], t.lineno(1), 0)  
+
+def p_expresion_potencia(t):
+    '''e : e POW e'''
+    t[0] = AST.Potencia(t[1], t[3], t.lineno(1), 0) 
+
+def p_expresion_modulo(t):
+    '''e : e MODULO e'''
+    t[0] = AST.Modulo(t[1], t[3], t.lineno(1), 0)                 
    
 
-## Valores literales
+## Valores literales -------------------------------------------
 def p_expresion_nulo(t):
     '''e : NULO'''
     t[0]=  AST.Nulo(t.lineno(1), 0)
@@ -224,12 +244,16 @@ def p_expresion_string(t):
 
 def p_error(t):     
     #print("Error sintáctico en "+str(t)+" linea: ") t.value t.type    
-    global_utils.registrySyntaxError(t.value,'Error de sintaxis. No se esperaba ' + t.type, t.lineno(1), find_column(t)) 
+    global_utils.registrySyntaxError(t.value,'Error de sintaxis. No se esperaba ' + t.type, t.lineno , find_column(t)) 
 
 import ply.yacc as yacc
 parser = yacc.yacc()
 
 def parse(input):
     global input_init
+    global linea
+    global columna
     input_init = input
+    linea = 0 
+    columa = 0
     return parser.parse(input,tracking=True)

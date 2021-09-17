@@ -1,12 +1,13 @@
 import json
 from json import JSONEncoder
+from datetime import date
+
+
 # Errors 
 _error_counter = 0
 _file_ = ''
 
-def iniciar():
-    _error_counter = 0
-    _file_ = ''
+
 
 
 class Error():
@@ -37,6 +38,14 @@ class SinglentonMeta(type):
 
 class Singlenton(metaclass=SinglentonMeta):
     _errors = []
+    fecha = date.today()
+
+    def iniciar(self):
+        global  _error_counter
+        global  _file_
+        _error_counter = 0
+        _file_ = ''
+        _errors = []
 
     def registryError(self, id, desc, line, column):
         self._errors.append(Error(id, type, desc, line, column))

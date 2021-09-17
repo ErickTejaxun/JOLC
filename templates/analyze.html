@@ -29,8 +29,7 @@
 
 <script type="text/javascript">    
     function analyze()
-    {
-        //var code = $("#inpt").val();
+    {        
         var code = editorInput.getValue();
         $.ajax({
             type: "POST",
@@ -39,12 +38,20 @@
             data: {inpt:code},            
             success: function(response)
             {                
-                var salida = undefined;                
+                var salida = undefined;
                 (response.output).forEach(element => 
                 {                                        
                     salida = salida == undefined ? element : salida + '\n' + element;
                 });                 
                 editorOutput.setValue(salida);                                  
+                if(response.errores!=true)
+                {
+                    toastr.info('Ejecución exitosa');
+                }
+                else
+                {
+                    toastr.warning('Se han encontrado errores. Por favor vea el área de reportes');
+                }
             }        
         });
     }

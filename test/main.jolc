@@ -20,3 +20,41 @@ println(nothing);
 println('3333433');
 println(-3);
 println(23+6.66+66);
+
+
+#Multiplicacion
+
+#JOLC Compiladores 2 USAC 2021
+println(-10+333+10);
+println("Hola" * "Mundo");
+println(2*3.3);
+println(2.3*8);
+println(1.2*5.4);
+println(2*3);
+
+#Division
+println(2/3.3);
+println(2.3/8);
+println(1.2/5.4);
+println(6/4);
+
+#Division
+println(2/3.3);
+println(2.3/8);
+println(1.2/5.4);
+println(6/4);
+
+#Potencia
+println(2 ^ 3.5);
+println(2.3 ^ 8);
+println(1.2 ^ 5.4);
+println(6 ^ 2);
+println("Hola perros"^5);
+
+
+#Modulo
+
+println(2%3.5);
+println(2.3%8);
+println(1.0%5.0);
+println(6%3);
