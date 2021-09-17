@@ -4,6 +4,11 @@ from json import JSONEncoder
 _error_counter = 0
 _file_ = ''
 
+def iniciar():
+    _error_counter = 0
+    _file_ = ''
+
+
 class Error():
     def __init__(self, id, type, desc, line, column):
         global _error_counter
