@@ -116,9 +116,8 @@ def t_line(t):
     r'\n+'
     t.lexer.lineno += len(t.value)
     
-def t_error(t):    
-    columna = find_column(t)
-    global_utils.registryLexicalError(t.value[0],'Caracter ilegal.', t.lexer.lineno, columna)    
+def t_error(t):        
+    global_utils.registryLexicalError(t.value[0],'Caracter ilegal.', t.lexer.lineno, find_column(t))
     t.lexer.skip(1)
 
 def find_column(token):
@@ -166,13 +165,13 @@ def p_lista_instrucciones(t):
 
 def p_lista_instrucciones_init(t):
     '''lista_instrucciones : imprimir'''
-    t[0] = AST.Bloque(t.lineno, t.lexpos)
+    t[0] = AST.Bloque(t.lineno(1), 0)
     t[0].agregarInstruccion(t[1])
 
 # Definicion de la gramática
 def p_instruccion_imprimir(t):
     '''imprimir : IMPRIMIR PARIZQ e PARDER PUNTOCOMA '''
-    t[0]= AST.Imprimir(t[3], t.lineno, t.lexpos)
+    t[0]= AST.Imprimir(t[3], t.lineno(1), 0)
 
 
 def p_expresion_parentesis(t):
@@ -182,51 +181,50 @@ def p_expresion_parentesis(t):
 
 def p_expresion_negativo(t):
     '''e : MENOS e'''
-    t[0] = AST.Negativo(t[2], t.lineno, t.lexpos)  
+    t[0] = AST.Negativo(t[2], t.lineno(1), 0)
 
 def p_expresion_suma(t):
     '''e : e MAS e'''
-    t[0] = AST.Suma(t[1], t[3], t.lineno, t.lexpos)
+    t[0] = AST.Suma(t[1], t[3], t.lineno(1), 0)
 
 def p_expresion_resta(t):
     '''e : e MENOS e'''
-    t[0] = AST.Resta(t[1], t[3], t.lineno, t.lexpos)    
+    t[0] = AST.Resta(t[1], t[3], t.lineno(1), 0)  
    
 
 ## Valores literales
 def p_expresion_nulo(t):
     '''e : NULO'''
-    t[0]=  AST.Nulo(t.lineno, t.lexpos)
+    t[0]=  AST.Nulo(t.lineno(1), 0)
 
 def p_expresion_entero(t):
     '''e : ENTERO'''
-    t[0]=  AST.Entero(t[1], t.lineno, t.lexpos)
+    t[0]=  AST.Entero(t[1], t.lineno(1), 0)
 
 def p_expresion_float(t):
     '''e : FLOAT'''
-    t[0]=  AST.Float(t[1], t.lineno, t.lexpos)
+    t[0]=  AST.Float(t[1], t.lineno(1), 0)
 
 def p_expresion_bool_true(t):
     '''e : RTRUE'''
-    t[0]=  AST.Bool(t[1], t.lineno, t.lexpos)    
+    t[0]=  AST.Bool(t[1], t.lineno(1), 0)  
 
 def p_expresion_bool_false(t):
     '''e : RFALSE'''
-    t[0]=  AST.Bool(t[1], t.lineno, t.lexpos)    
+    t[0]=  AST.Bool(t[1], t.lineno(1), 0)  
 
 def p_expresion_char(t):
     '''e : CHAR'''
-    t[0] = AST.Char(t[1], t.lineno, t.lexpos)
+    t[0] = AST.Char(t[1], t.lineno(1), 0)
 
 def p_expresion_string(t):
     '''e : STRING'''
-    t[0] = AST.String(t[1], t.lineno, t.lexpos)
+    t[0] = AST.String(t[1], t.lineno(1), 0)
 
 
 def p_error(t):     
-    #print("Error sintáctico en "+str(t)+" linea: ") t.value t.type
-    columna = find_column(t)
-    global_utils.registrySyntaxError(t.value,'Error de sintaxis. No se esperaba ' + t.type, t.lineno, columna) 
+    #print("Error sintáctico en "+str(t)+" linea: ") t.value t.type    
+    global_utils.registrySyntaxError(t.value,'Error de sintaxis. No se esperaba ' + t.type, t.lineno(1), find_column(t)) 
 
 import ply.yacc as yacc
 parser = yacc.yacc()
@@ -234,4 +232,4 @@ parser = yacc.yacc()
 def parse(input):
     global input_init
     input_init = input
-    return parser.parse(input)
+    return parser.parse(input,tracking=True)

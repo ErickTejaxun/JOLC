@@ -1,12 +1,12 @@
 #JOLC Compiladores 2 USAC 2021
-pritnln(2 + 3.3);
-pritnln(2.3 + 8);
-pritnln(1.2 + 5.4);
-pritnln(2+3);
-pritnln(2 + 3.3 );
-pritnln(2.3 + 8 );
-pritnln(1.2 + 5.4 );
-pritnln(2-3 );
+println(2 + 3.3);
+println(2.3 + 8);
+println(1.2 + 5.4);
+println(2+3);
+println(2 - 3.3 );
+println(2.3 - 8 );
+println(1.2 - 5.4 );
+println(2-3 );
 
 
 #JOLC Compiladores 2 USAC 2021
