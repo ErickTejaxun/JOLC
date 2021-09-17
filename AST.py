@@ -7,6 +7,9 @@ USAC 2021
 
 from abc import ABC, abstractmethod
 from enum import Enum
+from json import JSONEncoder
+
+from singlenton import global_utils
 
 ### Tabla de símbolo
 class TipoPrimitivo(Enum):
@@ -30,6 +33,10 @@ class Tipo():
         self.primitivo = False
         self.nombre = nombre
 
+    def toJSON(self):
+        return json.dumps(self, default=lambda o: o.__dict__, 
+            sort_keys=True, indent=2)          
+
 
 class Simbolo():
     def __init__(self, id, tipo, valor, linea, columna):
@@ -42,6 +49,11 @@ class Simbolo():
     def getTipo(self):
         return self.tipo
 
+    def toJSON(self):
+        return json.dumps(self, default=lambda o: o.__dict__, 
+            sort_keys=True, indent=2)  
+
+'''Tabla de símbolos -------------------------------------------'''
 class TablaSimbolo():
     def __init__(self):
         self.tabla = []
@@ -51,19 +63,39 @@ class TablaSimbolo():
         self.tabla.append(simbolo)
     
     def getSimbolo(self, id):
+        entornoActual = self
         return self.tabla[id]
     
     def imprimirln(self, valor):
         self.consola.append(str(valor))
 
+    def toJSON(self):
+        return json.dumps(self, default=lambda o: o.__dict__, 
+            sort_keys=True, indent=2)          
+
+'''Entorno -------------------------------------------------------'''
 class Entorno():
     def __init__(self, padre):
         self.tabla = TablaSimbolo()
         self.padre = padre
     
     def getSimbolo(self, id):
-        return self.tabla.getSimbolo(id)
+        '''Buscamos en el entorno actual y si no está, buscamos en el entorno superior'''
+        entornoActual = self
+        while entornoActual is not None:
+            tmpValor = entornoActual.tabla.getSimbolo(id)
+            if tmpValor is None:
+                entornoActual = self.padre
+            else: 
+                return tmpValor
+        return None        
+    
+    def insertSimbolo(self, simbolo):
+        self.tabla.registrarSimbolo(simbolo)
 
+    def toJSON(self):
+        return json.dumps(self, default=lambda o: o.__dict__, 
+            sort_keys=True, indent=2)         
 
 ### AST 
 class NodoAST(ABC):
@@ -73,18 +105,18 @@ class NodoAST(ABC):
 class Expresion(NodoAST):
 
     @abstractmethod
-    def getValor(self, tabla):
+    def getValor(self, entorno):
         pass
 
     @abstractmethod
-    def getTipo(self, tabla):
+    def getTipo(self, entorno):
         pass
 
 
 ## Definición de instruccion
 class Instruccion(NodoAST):
     @abstractmethod
-    def ejecutar(self, tabla):
+    def ejecutar(self, entorno):
         pass
 
 ## Instrucciones ------------------------------------------------
@@ -94,9 +126,22 @@ class Imprimir(Instruccion):
         self.linea = linea
         self.columna = columna
     
-    def ejecutar(self, tabla):
-        valor = self.expresion.getValor(tabla)
-        tabla.imprimirln(valor)
+    def ejecutar(self, entorno):
+        valor = self.expresion.getValor(entorno)
+        entorno.tabla.imprimirln(valor)
+
+class Bloque(Instruccion):
+    def __init__(self, linea, columna):
+        self.linea = linea
+        self.columna = columna
+        self.instrucciones = []
+    
+    def agregarInstruccion(self, instruccion):
+        self.instrucciones.append(instruccion)
+    
+    def ejecutar(self, entorno):
+        for inst in self.instrucciones:
+            inst.ejecutar(entorno)
 
 ## Expresion -----------------------------------------------------
 
@@ -107,10 +152,10 @@ class Entero(Expresion):
         self.columna = columna
         self.tipo = Tipo(TipoPrimitivo.ENTERO,'')
     
-    def getValor(self, tabla):
+    def getValor(self, entorno):
         return self.valor
     
-    def getTipo(self, tabla):
+    def getTipo(self, entorno):
         return self.tipo
 
 

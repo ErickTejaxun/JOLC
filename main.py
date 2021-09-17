@@ -15,8 +15,9 @@ def home():
 def analyze():
     if request.method == "POST":
         inpt = request.form["inpt"] 
-        result = parse(inpt)
-        return jsonify(output=result)        
+        entorno = parse(inpt) 
+        tabla = entorno.tabla   
+        return jsonify(output=tabla.consola)        
     else:
         return render_template('analyze.html', initial="#JOLC Compiladores 2 USAC 2021")
 
@@ -36,8 +37,6 @@ def errors():
         print('Errores')
         print(errores)
         return jsonify(errors=errores)
-
-
 
 @app.route('/output/')
 def output(inpt):

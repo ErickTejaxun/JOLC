@@ -38,9 +38,13 @@
             dataType: "json",
             data: {inpt:code},            
             success: function(response)
-            {
-                editorOutput.setValue(response.output);                
-                $("#output").val(response.output);
+            {                
+                var salida = undefined;                
+                (response.output).forEach(element => 
+                {                                        
+                    salida = salida == undefined ? element : salida + '\n' + element;
+                });                 
+                editorOutput.setValue(salida);                                  
             }        
         });
     }
