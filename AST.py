@@ -21,21 +21,34 @@ class TipoPrimitivo(Enum):
     STRING = 6
     ARREGLO = 7
     STRUCT = 8
+    ERROR = 9
 
 class Tipo():
-    def __init__(self, tipo):
+    def __init__(self, tipo, primitivo = True,  nombre=""):
         self.tipo = tipo
-        self.primitivo = True 
-        self.nombre = ""
-
-    def __init__(self, tipo, nombre):
-        self.tipo = tipo
-        self.primitivo = False
+        self.primitivo = primitivo
         self.nombre = nombre
 
     def toJSON(self):
         return json.dumps(self, default=lambda o: o.__dict__, 
-            sort_keys=True, indent=2)          
+            sort_keys=True, indent=2) 
+
+    def esCadena(self):
+        return self.tipo == TipoPrimitivo.STRING
+    def esNulo(self):
+        return self.tipo == TipoPrimitivo.NULO
+    def esEntero(self):
+        return self.tipo == TipoPrimitivo.ENTERO
+    def esFloat(self):
+        return self.tipo == TipoPrimitivo.FLOAT
+    def esBool(self):
+        return self.tipo == TipoPrimitivo.BOOL 
+    def esChar(self):
+        return self.tipo == TipoPrimitivo.CHAR
+    def esError(self):
+        return self.tipo == TipoPrimitivo.ERROR
+    def esNumerico(self):
+        return self.tipo == TipoPrimitivo.ENTERO or self.tipo == TipoPrimitivo.FLOAT 
 
 
 class Simbolo():
@@ -144,6 +157,120 @@ class Bloque(Instruccion):
             inst.ejecutar(entorno)
 
 ## Expresion -----------------------------------------------------
+
+class Suma(Expresion):
+    def __init__(self, expresionI, expresionD, linea, columna):
+        self.expresionI = expresionI
+        self.expresionD = expresionD
+        self.linea = linea
+        self.columna = columna
+    
+    def getTipo(self, entorno):
+        tipoI = self.expresionI.getTipo(entorno)
+        tipoD = self.expresionD.getTipo(entorno)
+
+        if(tipoI.esCadena() or tipoD.esCadena()):        
+            global_utils.registrySemanticError('+','Error Semántico. No es posible realizar la operación ' + tipoI + " + " + tipoD , self.linea, self.columna)
+            return Tipo(TipoPrimitivo.ERROR)
+        if(tipoI.esFloat() or tipoD.esFloat()):
+            return Tipo(TipoPrimitivo.FLOAT)
+        return Tipo(TipoPrimitivo.ENTERO)
+    
+    def getValor(self, entorno):
+        tipo_actual = self.getTipo(entorno)
+
+        if tipo_actual.esError():
+            return None
+
+        if tipo_actual.esFloat():
+            valorI = self.expresionI.getValor(entorno)
+            valorD = self.expresionD.getValor(entorno)
+            self.valor = float(valorI) + float(valorD)
+            return self.valor
+            
+        if tipo_actual.esEntero():            
+            valorI = self.expresionI.getValor(entorno)
+            valorD = self.expresionD.getValor(entorno)
+            self.valor = int(valorI)+ int(valorD)
+            return self.valor
+        
+        return None
+
+
+class Resta(Expresion):
+    def __init__(self, expresionI, expresionD, linea, columna):
+        self.expresionI = expresionI
+        self.expresionD = expresionD
+        self.linea = linea
+        self.columna = columna
+    
+    def getTipo(self, entorno):
+        tipoI = self.expresionI.getTipo(entorno)
+        tipoD = self.expresionD.getTipo(entorno)
+
+        if (tipoI.esNumerico() and tipoD.esNumerico()):
+            if (tipoI.esFloat() or tipoD.esFloat()):
+                return Tipo(TipoPrimitivo.FLOAT)
+            return Tipo(TipoPrimitivo.ENTERO)
+
+        global_utils.registrySemanticError('-','Error Semántico. No es posible realizar la operación ' + tipoI + " - " + tipoD , self.linea, self.columna)
+        return Tipo(TipoPrimitivo.ERROR)        
+    
+    def getValor(self, entorno):
+        tipo_actual = self.getTipo(entorno)
+
+        if tipo_actual.esError():
+            return None
+            
+        if tipo_actual.esFloat():
+            valorI = self.expresionI.getValor(entorno)
+            valorD = self.expresionD.getValor(entorno)
+            self.valor = float(valorI) - float(valorD)
+            return self.valor
+            
+        if tipo_actual.esEntero():            
+            valorI = self.expresionI.getValor(entorno)
+            valorD = self.expresionD.getValor(entorno)
+            self.valor = int(valorI) - int(valorD)
+            return self.valor
+        
+        return None        
+        
+class Negativo(Expresion):
+    def __init__(self, expresion, linea, columna):
+        self.expresion = expresion        
+        self.linea = linea
+        self.columna = columna
+    
+    def getTipo(self, entorno):
+        tipo = self.expresion.getTipo(entorno)        
+
+        if tipo.esNumerico():
+            if tipo.esFloat():
+                return Tipo(TipoPrimitivo.FLOAT)
+            return Tipo(TipoPrimitivo.ENTERO)
+
+        global_utils.registrySemanticError('-','Error Semántico. No es posible realizar la operación (-) ' + tipoD , self.linea, self.columna)
+        return Tipo(TipoPrimitivo.ERROR)        
+    
+    def getValor(self, entorno):
+        tipo_actual = self.getTipo(entorno)
+
+        if tipo_actual.esError():
+            return None
+            
+        valor = self.expresion.getValor(entorno)
+        if tipo_actual.esFloat():                        
+            self.valor = float(valor) * -1 
+            return self.valor
+            
+        if tipo_actual.esEntero():                                            
+            self.valor = int(valor) * -1 
+            return self.valor
+
+        return None  
+
+
 
 class Nulo(Expresion):
     def __init__(self, linea, columna):        

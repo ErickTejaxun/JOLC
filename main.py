@@ -40,8 +40,8 @@ def errors():
         errores = []
         for err in global_utils._errors:
             errores.append(json.loads(err.toJSON()))
-        print('Errores')
-        print(errores)
+        #print('Errores')
+        #print(errores)
         return jsonify(errors=errores)
 
 @app.route('/output/')

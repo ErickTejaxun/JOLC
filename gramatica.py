@@ -3,7 +3,9 @@
 # USAC 2021
 # --------------------
 from singlenton import global_utils
-
+linea = 0 
+columa = 0
+input_init = ''
 # tokens definition
 tokens = (
     'PARIZQ',
@@ -29,7 +31,6 @@ tokens = (
     'IMPRIMIR',
     #----------->
     'PUNTOCOMA'
-
 )
 
 t_PUNTOCOMA=r';'
@@ -55,7 +56,7 @@ t_ignore = " \t"
 
 def t_COMMENT(t):
     r'\#.*'
-    print("Comentario  " + t.value)
+    #print("Comentario  " + t.value)
     pass
 
 #def t_COMMENT_MULTI(t):
@@ -113,11 +114,17 @@ def t_RFALSE(t):
 
 def t_line(t):
     r'\n+'
-    t.lexer.lineno += t.value.count("\n")
+    t.lexer.lineno += len(t.value)
     
 def t_error(t):    
-    global_utils.registryLexicalError(t.value[0],'Caracter ilegal.', t.lexer.lineno, t.lexer.lineno)    
+    columna = find_column(t)
+    global_utils.registryLexicalError(t.value[0],'Caracter ilegal.', t.lexer.lineno, columna)    
     t.lexer.skip(1)
+
+def find_column(token):
+    global input_init
+    line_start = input_init.rfind('\n', 0, token.lexpos) + 1
+    return (token.lexpos - line_start) + 1
 
 
 
@@ -169,8 +176,22 @@ def p_instruccion_imprimir(t):
 
 
 def p_expresion_parentesis(t):
-    'e : PARIZQ e PARDER'
+    '''e : PARIZQ e PARDER'''
     t[0]=t[2]
+
+
+def p_expresion_negativo(t):
+    '''e : MENOS e'''
+    t[0] = AST.Negativo(t[2], t.lineno, t.lexpos)  
+
+def p_expresion_suma(t):
+    '''e : e MAS e'''
+    t[0] = AST.Suma(t[1], t[3], t.lineno, t.lexpos)
+
+def p_expresion_resta(t):
+    '''e : e MENOS e'''
+    t[0] = AST.Resta(t[1], t[3], t.lineno, t.lexpos)    
+   
 
 ## Valores literales
 def p_expresion_nulo(t):
@@ -203,11 +224,14 @@ def p_expresion_string(t):
 
 
 def p_error(t):     
-    #print("Error sintáctico en "+str(t)+" linea: ")
-    global_utils.registrySyntaxError(str(t),'Error de sintaxis', t.lineno, t.lexpos)    
+    #print("Error sintáctico en "+str(t)+" linea: ") t.value t.type
+    columna = find_column(t)
+    global_utils.registrySyntaxError(t.value,'Error de sintaxis. No se esperaba ' + t.type, t.lineno, columna) 
 
 import ply.yacc as yacc
 parser = yacc.yacc()
 
 def parse(input):
+    global input_init
+    input_init = input
     return parser.parse(input)
