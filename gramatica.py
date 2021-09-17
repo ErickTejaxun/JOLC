@@ -18,10 +18,14 @@ tokens = (
     'DIFDE',
     'MAY',
     'MEN',
-    'DECIMAL',
+    #-------PRIMITIVAS
+    'NULO',
+    'FLOAT',
     'ENTERO',
     'RTRUE',
     'RFALSE',
+    'CHAR',
+    'STRING',
     'IMPRIMIR',
     #----------->
     'PUNTOCOMA'
@@ -41,14 +45,12 @@ t_IGIG = r'=='
 t_DIFDE = r'!='
 t_MAY = r'>'
 t_MEN = r'<'
-t_RTRUE=r'true'
-t_RFALSE=r'false'
 t_IMPRIMIR = 'println'
 
 
 
 # ignored characters, tab and space
-t_ignore = " \t\n"
+t_ignore = " \t"
 
 
 def t_COMMENT(t):
@@ -61,14 +63,30 @@ def t_COMMENT(t):
 #    print("Comentario multilinea: " + t.value)
 #    pass
 
+def t_CHAR(t):
+    r'\'([^\\\n]|(\\.))*?\''
+    string = str(t.value)
+    if len(string) == 2 :
+        t.value = ''
+    else:
+        t.value = string[1]
+    return t
 
-def t_DECIMAL(t):
+def t_STRING(t):
+    r'\"([^\\\n]|(\\.))*?\"'
+    t.value = t.value[1:-1]
+    return t
+
+def t_NULO(t):
+    r'nothing'    
+    return t
+
+def t_FLOAT(t):
     r'\d+\.\d+'
     try:
         t.value = float(t.value)
     except ValueError:
-        # log error 
-        print("Float value too large %d", t.value)
+        # log error         
         t.value = 0
     return t
 
@@ -78,10 +96,20 @@ def t_ENTERO(t):
         t.value = int(t.value)
     except ValueError:
         # log error         
-        print("Integer value too large %d", t.value)
+        #print("Integer value too large %d", t.value)
         t.value = 0
     return t
 
+def t_RTRUE(t):
+    r'true'
+    t.value = True    
+    return t
+
+def t_RFALSE(t):
+    r'false'
+    t.value = False    
+    return t
+    
 
 def t_line(t):
     r'\n+'
@@ -113,16 +141,12 @@ precedence = (
     )
 
 def p_raiz(t):
-    '''root : lista_instrucciones'''
-    entornoPrincial = AST.Entorno(None)    
-    t[1].ejecutar(entornoPrincial)    
-    t[0] = entornoPrincial
+    '''root : lista_instrucciones'''          
+    t[0] = t[1]
 
 def p_raiz_2(t):
     '''root :  empty '''
-    entornoPrincial = AST.Entorno(None)
-    entornoPrincial.tabla.imprimirln('')    
-    t[0] = entornoPrincial
+    t[0] = None
 
 def p_empty(t):
     'empty :'
@@ -149,9 +173,33 @@ def p_expresion_parentesis(t):
     t[0]=t[2]
 
 ## Valores literales
+def p_expresion_nulo(t):
+    '''e : NULO'''
+    t[0]=  AST.Nulo(t.lineno, t.lexpos)
+
 def p_expresion_entero(t):
-    '''e    : ENTERO'''
-    t[0]=  AST.Entero(t[1], t.lineno, t.lexpos)    
+    '''e : ENTERO'''
+    t[0]=  AST.Entero(t[1], t.lineno, t.lexpos)
+
+def p_expresion_float(t):
+    '''e : FLOAT'''
+    t[0]=  AST.Float(t[1], t.lineno, t.lexpos)
+
+def p_expresion_bool_true(t):
+    '''e : RTRUE'''
+    t[0]=  AST.Bool(t[1], t.lineno, t.lexpos)    
+
+def p_expresion_bool_false(t):
+    '''e : RFALSE'''
+    t[0]=  AST.Bool(t[1], t.lineno, t.lexpos)    
+
+def p_expresion_char(t):
+    '''e : CHAR'''
+    t[0] = AST.Char(t[1], t.lineno, t.lexpos)
+
+def p_expresion_string(t):
+    '''e : STRING'''
+    t[0] = AST.String(t[1], t.lineno, t.lexpos)
 
 
 def p_error(t):     

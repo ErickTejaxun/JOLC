@@ -1,0 +1,9 @@
+#JOLC Compiladores 2 USAC 2021
+println(10);
+println(10.3);
+println(10.3333333333333333);
+println(nothing);
+println(true);
+println(false);
+println(nothing);
+println('3333433');

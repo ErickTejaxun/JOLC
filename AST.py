@@ -145,6 +145,19 @@ class Bloque(Instruccion):
 
 ## Expresion -----------------------------------------------------
 
+class Nulo(Expresion):
+    def __init__(self, linea, columna):        
+        self.linea = linea
+        self.columna = columna
+        self.valor = None
+        self.tipo = Tipo(TipoPrimitivo.NULO,'')
+    
+    def getValor(self, entorno):
+        return self.valor
+    
+    def getTipo(self, entorno):
+        return self.tipo
+
 class Entero(Expresion):
     def __init__(self, valor, linea, columna):
         self.valor = valor
@@ -158,4 +171,56 @@ class Entero(Expresion):
     def getTipo(self, entorno):
         return self.tipo
 
+class Float(Expresion):
+    def __init__(self, valor, linea, columna):
+        self.valor = valor
+        self.linea = linea
+        self.columna = columna
+        self.tipo = Tipo(TipoPrimitivo.FLOAT,'')
+    
+    def getValor(self, entorno):
+        return self.valor
+    
+    def getTipo(self, entorno):
+        return self.tipo
 
+
+class Bool(Expresion):
+    def __init__(self, valor, linea, columna):
+        self.valor = valor
+        self.linea = linea
+        self.columna = columna
+        self.tipo = Tipo(TipoPrimitivo.BOOL,'')
+    
+    def getValor(self, entorno):
+        return self.valor
+    
+    def getTipo(self, entorno):
+        return self.tipo
+
+
+class Char(Expresion):
+    def __init__(self, valor, linea, columna):
+        self.valor = valor
+        self.linea = linea
+        self.columna = columna
+        self.tipo = Tipo(TipoPrimitivo.CHAR,'')
+    
+    def getValor(self, entorno):
+        return self.valor
+    
+    def getTipo(self, entorno):
+        return self.tipo
+
+class String(Expresion):
+    def __init__(self, valor, linea, columna):
+        self.valor = valor
+        self.linea = linea
+        self.columna = columna
+        self.tipo = Tipo(TipoPrimitivo.STRING,'')
+    
+    def getValor(self, entorno):
+        return self.valor
+    
+    def getTipo(self, entorno):
+        return self.tipo        

@@ -15,9 +15,15 @@ def home():
 def analyze():
     if request.method == "POST":
         inpt = request.form["inpt"] 
-        entorno = parse(inpt) 
-        tabla = entorno.tabla   
-        return jsonify(output=tabla.consola)        
+        raiz = parse(inpt) 
+        if raiz is not None:
+            entornoGlobal  = AST.Entorno(None)
+            raiz.ejecutar(entornoGlobal) 
+            return jsonify(output=entornoGlobal.tabla.consola)
+        else:        
+            salida = []
+            salida.append('')
+            return jsonify(output=salida)
     else:
         return render_template('analyze.html', initial="#JOLC Compiladores 2 USAC 2021")
 
