@@ -92,3 +92,9 @@ println(true && true);
 println(! true);
 println(! false);
 
+#JOLC Compiladores 2 USAC 2021
+print(30#= comantario de muchas lineas
+  
+  =# *3);
+
+println("Hola");

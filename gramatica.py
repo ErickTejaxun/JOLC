@@ -6,10 +6,11 @@ from singlenton import global_utils
 linea = 0 
 columa = 0
 input_ANY_init = ''
+string_cadena_impresion = '' 
 
 #Estados 
 states = (
-    ('cadena_impresion', 'exclusive'),
+    ('cadena', 'exclusive'),
     ('impresion', 'exclusive'),
 )
 
@@ -53,13 +54,14 @@ tokens = (
     'SQRT',
     #----------->
     'PUNTOCOMA',
-    'COMA'
+    'COMA',
+    'COMILLA'
 )
 
 t_ANY_PUNTOCOMA=r';'
 t_ANY_COMA=r','
 t_ANY_PARIZQ = r'\('
-t_ANY_PARDER = r'\)'
+t_INITIAL_cadena_PARDER = r'\)'
 t_ANY_MAS = r'\+'
 t_ANY_MENOS = r'-'
 t_ANY_POR = r'\*'
@@ -89,38 +91,25 @@ t_ANY_SQRT= r'sqrt'
 # ignored characters, tab and space
 t_ANY_ignore = " \t"
 
-
-#def t_ANY_COMMENT(t):
-#    r'\#.*'
-#    #print("Comentario  " + t.value)
-#    pass
-
 def t_ANY_comment(t):
      r'(\#=(.|\n)*?=\#)|(\#.*)'
-     print(t.value)
+     #print(t.value)     
      pass
 
-#def t_ANY_COMMENt_ANY_MULTI(t):
-#    r'(?s)\#=.*?=\#'
-#    print("Comentario multilinea: " + t.value)
-#    pass
-
-def t_ANY_IMPRIMIRLN(t):
+def t_INITIAL_IMPRIMIRLN(t):
     r'println'
-    t.lexer.begin('cadena_impresion')
+    t.lexer.begin('impresion')
     return t    
 
-
-def t_ANY_IMPRIMIR(t):
+def t_INITIAL_IMPRIMIR(t):
     r'print'
-    t.lexer.begin('cadena_impresion')
+    t.lexer.begin('impresion')
     return t
 
 def t_impresion_PARDER(t):
     r'\)'
     t.lexer.begin('INITIAL')
     return t 
-
 
 def t_ANY_CHAR(t):
     r'\'([^\\\n]|(\\.))*?\''
@@ -131,7 +120,6 @@ def t_ANY_CHAR(t):
         t.value = string[1]
     return t
 
-
 def t_INITIAL_STRING(t):
     r'\"([^\\\n]|(\\.))*?\"'
     t.value = t.value[1:-1]
@@ -139,11 +127,22 @@ def t_INITIAL_STRING(t):
 
 def t_impresion_STRING(t):
     r'\"'
-    t.lexer.begin('cadena_impresion') 
+    global string_cadena_impresion
+    string_cadena_impresion  = ''
+    t.lexer.begin('cadena') 
 
-def t_cadena_impresion_STRING(t):
-    r'\"'
-    t.lexer.begin('cadena')
+def t_cadena_STRING(t):
+    r'\"'    
+    t.value = string_cadena_impresion
+    t.lexer.begin('impresion')
+    return t
+
+def t_cadena_COMILLA(t):
+    r'.'    
+    if t.value == '\n':
+        t.lexer.lineno += 1
+    global string_cadena_impresion
+    string_cadena_impresion = string_cadena_impresion + str(t.value)    
 
 
 def t_ANY_NULO(t):
