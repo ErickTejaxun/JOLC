@@ -114,6 +114,13 @@ class TablaSimbolo():
     def imprimirln(self, valor):
         self.consola.append(str(valor))
 
+    def imprimir(self, valor):
+        if len(self.consola) > 0:
+            texto = self.consola[len(self.consola)-1]        
+            self.consola[len(self.consola)-1] = texto+str(valor)
+        else: 
+            self.consola.append(str(valor))
+
     def toJSON(self):
         return json.dumps(self, default=lambda o: o.__dict__, 
             sort_keys=True, indent=2)          
@@ -179,14 +186,30 @@ class Bloque(Instruccion):
             inst.ejecutar(entorno)
 
 class Imprimir(Instruccion):
-    def __init__(self, expresion, linea, columna):
-        self.expresion = expresion
+    def __init__(self, lista_expresiones, linea, columna):
+        self.lista_expresiones = lista_expresiones
         self.linea = linea
         self.columna = columna
     
     def ejecutar(self, entorno):
-        valor = self.expresion.getValor(entorno)
-        entorno.tabla.imprimirln(valor)
+        cadena = ''
+        for exp in self.lista_expresiones:
+            valor = exp.getValor(entorno)
+            cadena = cadena + valor
+        entorno.tabla.imprimir(cadena)
+
+class ImprimirLn(Instruccion):
+    def __init__(self, lista_expresiones, linea, columna):
+        self.lista_expresiones = lista_expresiones
+        self.linea = linea
+        self.columna = columna
+    
+    def ejecutar(self, entorno):
+        cadena = ''
+        for exp in self.lista_expresiones:
+            valor = exp.getValor(entorno)
+            cadena = cadena + valor
+        entorno.tabla.imprimirln(cadena)        
 
 ## Expresion -----------------------------------------------------
 

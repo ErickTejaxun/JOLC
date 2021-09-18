@@ -34,6 +34,7 @@ tokens = (
     'CHAR',
     'STRING',
     'IMPRIMIR',
+    'IMPRIMIRLN',
     'UPPERCASE',
     'LOWERCASE',
     'LOG10',
@@ -66,7 +67,8 @@ t_MAY = r'>'
 t_MEN = r'<'
 t_POW = r'\^'
 t_MODULO = r'%'
-t_IMPRIMIR = r'println'
+t_IMPRIMIR = r'print'
+t_IMPRIMIRLN = r'println'
 t_UPPERCASE = r'uppercase'
 t_LOWERCASE = r'lowercase'
 t_LOG = r'log'
@@ -186,8 +188,13 @@ def p_empty(t):
     'empty :'
     pass
 
-def p_lista_instrucciones(t):
+def p_lista_instrucciones_1(t):
     '''lista_instrucciones : lista_instrucciones imprimir'''    
+    t[1].agregarInstruccion(t[2])
+    t[0] = t[1]
+
+def p_lista_instrucciones_2(t):
+    '''lista_instrucciones : lista_instrucciones imprimirln'''    
     t[1].agregarInstruccion(t[2])
     t[0] = t[1]
 
@@ -196,15 +203,28 @@ def p_lista_instrucciones_imprimir(t):
     t[0] = AST.Bloque(t.lineno(1), 0)
     t[0].agregarInstruccion(t[1])
 
-#def p_lista_instrucciones_uppercase(t):
-#    '''lista_instrucciones : uppercase'''
-#    t[0] = AST.Bloque(t.lineno(1), 0)
-#    t[0].agregarInstruccion(t[1])
+def p_lista_instrucciones_imprimirln(t):
+    '''lista_instrucciones : imprimirln'''
+    t[0] = AST.Bloque(t.lineno(1), 0)
+    t[0].agregarInstruccion(t[1])
 
-# Definicion de la gramática
+def p_instruccion_imprimirln(t):
+    '''imprimirln : IMPRIMIRLN PARIZQ lista_e PARDER PUNTOCOMA '''
+    t[0]= AST.ImprimirLn(t[3], t.lineno(1), 0)
+
 def p_instruccion_imprimir(t):
-    '''imprimir : IMPRIMIR PARIZQ e PARDER PUNTOCOMA '''
+    '''imprimir : IMPRIMIR PARIZQ lista_e PARDER PUNTOCOMA '''
     t[0]= AST.Imprimir(t[3], t.lineno(1), 0)
+
+def p_lista_expresion(t):
+    ''' lista_e : lista_e COMA e '''
+    t[0] = t[1]
+    t[0].append(t[3])
+
+def p_lista_expresion_base(t):
+    ''' lista_e : e '''
+    t[0] = []
+    t[0].append(t[1])
 
 def p_uppercase(t):
     '''uppercase : UPPERCASE PARIZQ e PARDER  '''
