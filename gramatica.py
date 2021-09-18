@@ -31,11 +31,21 @@ tokens = (
     'CHAR',
     'STRING',
     'IMPRIMIR',
+    'UPPERCASE',
+    'LOWERCASE',
+    'LOG10',
+    'LOG',  
+    'SIN',
+    'COS',
+    'TAN',
+    'SQRT',
     #----------->
-    'PUNTOCOMA'
+    'PUNTOCOMA',
+    'COMA'
 )
 
 t_PUNTOCOMA=r';'
+t_COMA=r','
 t_PARIZQ = r'\('
 t_PARDER = r'\)'
 t_MAS = r'\+'
@@ -51,6 +61,14 @@ t_MEN = r'<'
 t_POW = r'\^'
 t_MODULO = r'%'
 t_IMPRIMIR = 'println'
+t_UPPERCASE = 'uppercase'
+t_LOWERCASE = 'lowercase'
+t_LOG = 'log'
+t_LOG10 = 'log10'
+t_SIN = 'sin'
+t_COS = 'cos'
+t_TAN = 'tan'
+t_SQRT= 'sqrt'
 
 
 
@@ -167,21 +185,90 @@ def p_lista_instrucciones(t):
     t[1].agregarInstruccion(t[2])
     t[0] = t[1]
 
-def p_lista_instrucciones_init(t):
+def p_lista_instrucciones_imprimir(t):
     '''lista_instrucciones : imprimir'''
     t[0] = AST.Bloque(t.lineno(1), 0)
     t[0].agregarInstruccion(t[1])
+
+#def p_lista_instrucciones_uppercase(t):
+#    '''lista_instrucciones : uppercase'''
+#    t[0] = AST.Bloque(t.lineno(1), 0)
+#    t[0].agregarInstruccion(t[1])
 
 # Definicion de la gramática
 def p_instruccion_imprimir(t):
     '''imprimir : IMPRIMIR PARIZQ e PARDER PUNTOCOMA '''
     t[0]= AST.Imprimir(t[3], t.lineno(1), 0)
 
+def p_uppercase(t):
+    '''uppercase : UPPERCASE PARIZQ e PARDER  '''
+    t[0] = AST.Uppercase(t[3], t.lineno(1), 0)
 
+def p_lowercase(t):
+    '''lowercase : LOWERCASE PARIZQ e PARDER  '''
+    t[0] = AST.Lowercase(t[3], t.lineno(1), 0)
+
+
+def p_log10(t):
+    '''log10 : LOG10 PARIZQ e PARDER  '''
+    t[0] = AST.Log10(t[3], t.lineno(1), 0)
+
+def p_log(t):
+    '''log : LOG PARIZQ e COMA e PARDER  '''
+    t[0] = AST.Log(t[3], t[5], t.lineno(1), 0)
+
+def p_sin(t):
+    '''sin : SIN PARIZQ e PARDER'''
+    t[0] = AST.Sin(t[3], t.lineno(1),0)
+
+def p_cos(t):
+    '''cos : COS PARIZQ e PARDER'''
+    t[0] = AST.Cos(t[3], t.lineno(1),0)
+
+def p_tan(t):
+    '''tan : TAN PARIZQ e PARDER'''
+    t[0] = AST.Tan(t[3], t.lineno(1),0)
+
+def p_sqrt(t):
+    '''sqrt : SQRT PARIZQ e PARDER'''
+    t[0] = AST.Sqrt(t[3], t.lineno(1),0)
+
+## Expresion --------------- e --> expresiones
 def p_expresion_parentesis(t):
     '''e : PARIZQ e PARDER'''
     t[0]=t[2]
 
+def p_expresion_log10(t):
+    '''e : log10'''
+    t[0] = t[1]
+
+def p_expresion_log(t):
+    '''e : log'''
+    t[0] = t[1]
+
+def p_expresion_sin(t):
+    '''e : sin'''
+    t[0] = t[1]
+
+def p_expresion_cos(t):
+    '''e : cos'''
+    t[0] = t[1]
+
+def p_expresion_tan(t):
+    '''e : tan'''
+    t[0] = t[1]
+
+def p_expresion_sqrt(t):
+    '''e : sqrt'''
+    t[0] = t[1]
+
+def p_expresion_uppercase(t):
+    '''e : uppercase'''
+    t[0] = t[1]
+
+def p_expresion_lowercase(t):
+    '''e : lowercase'''
+    t[0] = t[1]
 
 def p_expresion_negativo(t):
     '''e : MENOS e  %prec UMINUS'''

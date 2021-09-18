@@ -1,8 +1,12 @@
 #JOLC Compiladores 2 USAC 2021
+println("--------------Sumas------------------");
 println(2 + 3.3);
 println(2.3 + 8);
 println(1.2 + 5.4);
 println(2+3);
+
+
+println("--------------Restas------------------");
 println(2 - 3.3 );
 println(2.3 - 8 );
 println(1.2 - 5.4 );
@@ -10,6 +14,7 @@ println(2-3 );
 
 
 #JOLC Compiladores 2 USAC 2021
+println("--------------Literales------------------");
 println(10);
 println(10.3);
 println(10.3333333333333333);
@@ -23,8 +28,8 @@ println(23+6.66+66);
 
 
 #Multiplicacion
-
 #JOLC Compiladores 2 USAC 2021
+println("--------------Multiplicacion------------------");
 println(-10+333+10);
 println("Hola" * "Mundo");
 println(2*3.3);
@@ -33,17 +38,13 @@ println(1.2*5.4);
 println(2*3);
 
 #Division
+println("--------------Division------------------");
 println(2/3.3);
 println(2.3/8);
 println(1.2/5.4);
 println(6/4);
 
-#Division
-println(2/3.3);
-println(2.3/8);
-println(1.2/5.4);
-println(6/4);
-
+println("--------------Potencia------------------");
 #Potencia
 println(2 ^ 3.5);
 println(2.3 ^ 8);
@@ -53,8 +54,24 @@ println("Hola perros"^5);
 
 
 #Modulo
-
+println("--------------Modulo------------------");
 println(2%3.5);
 println(2.3%8);
 println(1.0%5.0);
 println(6%3);
+
+
+println("--Uperacase and lowercase");
+println(uppercase("hola")^3);
+println(lowercase("HOLA")^3);
+println(uppercase("hola")* lowercase("HOLA"));
+println(lowercase("HOLA")* uppercase("hola"));
+
+## Logaritmos
+println(log10(100));
+println(log(2,4));
+println(log(2,4));
+println(sin(45));
+println(cos(45));
+println(tan(45));
+println(sqrt(25));

@@ -8,8 +8,8 @@ USAC 2021
 from abc import ABC, abstractmethod
 from enum import Enum
 from json import JSONEncoder
-
 from singlenton import global_utils
+import math
 
 ### Tabla de símbolo
 class TipoPrimitivo(Enum):
@@ -23,6 +23,18 @@ class TipoPrimitivo(Enum):
     STRUCT = 8
     ERROR = 9
 
+NOMBRES = {
+    1: 'Nulo',
+    2: 'int',
+    3: 'float',
+    4: 'bool',
+    5: 'char',
+    6: 'string',
+    7: 'arreglo',
+    8: 'struct',
+    9: 'error'
+}
+
 class Tipo():
     def __init__(self, tipo, primitivo = True,  nombre=""):
         self.tipo = tipo
@@ -32,6 +44,26 @@ class Tipo():
     def toJSON(self):
         return json.dumps(self, default=lambda o: o.__dict__, 
             sort_keys=True, indent=2) 
+        
+    def getNombre(self):
+        if self.tipo == TipoPrimitivo.NULO:
+            return 'nulo'
+        if self.tipo == TipoPrimitivo.ENTERO:
+            return 'entero'
+        if self.tipo ==  TipoPrimitivo.FLOAT:
+            return 'float'
+        if self.tipo ==  TipoPrimitivo.BOOL:
+            return 'bool'
+        if self.tipo ==  TipoPrimitivo.CHAR:
+            return 'char'
+        if self.tipo ==  TipoPrimitivo.STRING:
+            return 'cadena'
+        if self.tipo ==  TipoPrimitivo.ARREGLO:
+            return 'arreglo'
+        if self.tipo ==  TipoPrimitivo.STRUCT:
+            return 'struct'
+        if self.tipo ==  TipoPrimitivo.ERROR:
+            return 'error'        
 
     def esCadena(self):
         return self.tipo == TipoPrimitivo.STRING
@@ -133,16 +165,6 @@ class Instruccion(NodoAST):
         pass
 
 ## Instrucciones ------------------------------------------------
-class Imprimir(Instruccion):
-    def __init__(self, expresion, linea, columna):
-        self.expresion = expresion
-        self.linea = linea
-        self.columna = columna
-    
-    def ejecutar(self, entorno):
-        valor = self.expresion.getValor(entorno)
-        entorno.tabla.imprimirln(valor)
-
 class Bloque(Instruccion):
     def __init__(self, linea, columna):
         self.linea = linea
@@ -155,6 +177,16 @@ class Bloque(Instruccion):
     def ejecutar(self, entorno):
         for inst in self.instrucciones:
             inst.ejecutar(entorno)
+
+class Imprimir(Instruccion):
+    def __init__(self, expresion, linea, columna):
+        self.expresion = expresion
+        self.linea = linea
+        self.columna = columna
+    
+    def ejecutar(self, entorno):
+        valor = self.expresion.getValor(entorno)
+        entorno.tabla.imprimirln(valor)
 
 ## Expresion -----------------------------------------------------
 
@@ -170,7 +202,7 @@ class Suma(Expresion):
         tipoD = self.expresionD.getTipo(entorno)
 
         if(tipoI.esCadena() or tipoD.esCadena()):        
-            global_utils.registrySemanticError('+','Error Semántico. No es posible realizar la operación ' + tipoI + " + " + tipoD , self.linea, self.columna)
+            global_utils.registrySemanticError('+','Error Semántico. No es posible realizar la operación ' + tipoI.getNombre() + " + " + tipoD.getNombre() , self.linea, self.columna)
             return Tipo(TipoPrimitivo.ERROR)
         if(tipoI.esFloat() or tipoD.esFloat()):
             return Tipo(TipoPrimitivo.FLOAT)
@@ -213,7 +245,7 @@ class Resta(Expresion):
                 return Tipo(TipoPrimitivo.FLOAT)
             return Tipo(TipoPrimitivo.ENTERO)
 
-        global_utils.registrySemanticError('-','Error Semántico. No es posible realizar la operación ' + tipoI + " - " + tipoD , self.linea, self.columna)
+        global_utils.registrySemanticError('-','Error Semántico. No es posible realizar la operación ' + tipoI.getNombre() + " - " + tipoD.getNombre(), self.linea, self.columna)
         return Tipo(TipoPrimitivo.ERROR)        
     
     def getValor(self, entorno):
@@ -257,7 +289,7 @@ class Multiplicacion(Expresion):
                 return Tipo(TipoPrimitivo.FLOAT)
             return Tipo(TipoPrimitivo.ENTERO)
 
-        global_utils.registrySemanticError('*','Error Semántico. No es posible realizar la operación ' + tipoI + " * " + tipoD , self.linea, self.columna)
+        global_utils.registrySemanticError('*','Error Semántico. No es posible realizar la operación ' + tipoI.getNombre() + " * " + tipoD.getNombre() , self.linea, self.columna)
         return Tipo(TipoPrimitivo.ERROR)        
     
     def getValor(self, entorno):
@@ -298,7 +330,7 @@ class Division(Expresion):
         if (tipoI.esNumerico() and tipoD.esNumerico()):
             return Tipo(TipoPrimitivo.FLOAT)
 
-        global_utils.registrySemanticError('/','Error Semántico. No es posible realizar la operación ' + tipoI + " / " + tipoD , self.linea, self.columna)
+        global_utils.registrySemanticError('/','Error Semántico. No es posible realizar la operación ' + tipoI.getNombre() + " / " + tipoD.getNombre() , self.linea, self.columna)
         return Tipo(TipoPrimitivo.ERROR)        
     
     def getValor(self, entorno):
@@ -341,7 +373,7 @@ class Potencia(Expresion):
         if (tipoI.esCadena() and tipoD.esEntero()):
             return Tipo(TipoPrimitivo.STRING)
 
-        global_utils.registrySemanticError('^','Error Semántico. No es posible realizar la operación ' + tipoI + " ^ " + tipoD , self.linea, self.columna)
+        global_utils.registrySemanticError('^','Error Semántico. No es posible realizar la operación ' + tipoI.getNombre() + " ^ " + tipoD.getNombre() , self.linea, self.columna)
         return Tipo(TipoPrimitivo.ERROR)        
     
     def getValor(self, entorno):
@@ -390,7 +422,7 @@ class Modulo(Expresion):
                 return Tipo(TipoPrimitivo.FLOAT)
             return Tipo(TipoPrimitivo.ENTERO)
 
-        global_utils.registrySemanticError('-','Error Semántico. No es posible realizar la operación ' + tipoI + " - " + tipoD , self.linea, self.columna)
+        global_utils.registrySemanticError('-','Error Semántico. No es posible realizar la operación ' + tipo.getNombre() + " - " + tipo.getNombre() , self.linea, self.columna)
         return Tipo(TipoPrimitivo.ERROR)        
     
     def getValor(self, entorno):
@@ -426,7 +458,7 @@ class Negativo(Expresion):
                 return Tipo(TipoPrimitivo.FLOAT)
             return Tipo(TipoPrimitivo.ENTERO)
 
-        global_utils.registrySemanticError('-','Error Semántico. No es posible realizar la operación (-) ' + tipoD , self.linea, self.columna)
+        global_utils.registrySemanticError('-','Error Semántico. No es posible realizar la operación (-) ' + tipo.getNombre() , self.linea, self.columna)
         return Tipo(TipoPrimitivo.ERROR)        
     
     def getValor(self, entorno):
@@ -527,3 +559,169 @@ class String(Expresion):
     
     def getTipo(self, entorno):
         return self.tipo        
+
+class Uppercase(Expresion):
+    def __init__(self, expresion, linea, columna):
+        self.expresion = expresion
+        self.linea = linea
+        self.columna = columna
+    
+    def getTipo(self, entorno):
+        tipo_tmp = self.expresion.getTipo(entorno)
+        if tipo_tmp.esCadena():
+            return Tipo(TipoPrimitivo.STRING)
+        return Tipo(TipoPrimitivo.ERROR)
+    
+    def getValor(self, entorno):
+        tipo_tmp = self.getTipo(entorno)
+        if tipo_tmp.esCadena():
+            valor  = self.expresion.getValor(entorno)
+            self.valor = str(valor).upper()
+            return self.valor
+        return None
+
+class Lowercase(Expresion):
+    def __init__(self, expresion, linea, columna):
+        self.expresion = expresion
+        self.linea = linea
+        self.columna = columna
+    
+    def getTipo(self, entorno):
+        tipo_tmp = self.expresion.getTipo(entorno)
+        if tipo_tmp.esCadena():
+            return Tipo(TipoPrimitivo.STRING)
+        global_utils.registrySemanticError('lowercase','Esta primitiva solo acepta valores de tipo Cadena, se ha recibido un valor de tipo' + tipo_tmp.getNombre() , self.linea, self.columna)
+        return Tipo(TipoPrimitivo.ERROR)
+    
+    def getValor(self, entorno):
+        tipo_tmp = self.getTipo(entorno)
+        if tipo_tmp.esCadena():
+            valor  = self.expresion.getValor(entorno)
+            self.valor = str(valor).lower()
+            return self.valor
+        return None
+
+class Log10(Expresion):
+    def __init__(self, expresion, linea, columna):
+        self.expresion = expresion
+        self.linea = linea
+        self.columan = columna
+    
+    def getTipo(self, entorno):
+        tipo_tmp = self.expresion.getTipo(entorno)
+        if tipo_tmp.esNumerico():
+            return tipo_tmp
+        return Tipo(TipoPrimitivo.ERROR)
+    
+    def getValor(self, entorno):
+        tipo_tmp = self.getTipo(entorno)
+        if tipo_tmp.esNumerico():
+            valor = self.expresion.getValor(entorno)            
+            self.valor = math.log10(valor)
+            return self.valor
+        return None
+        
+
+class Log(Expresion):
+    def __init__(self, expresionI, expresionD, linea, columna):
+        self.expresionI = expresionI
+        self.expresionD = expresionD
+        self.linea = linea
+        self.columan = columna
+    
+    def getTipo(self, entorno):
+        tipoI = self.expresionI.getTipo(entorno)
+        tipoD = self.expresionD.getTipo(entorno)
+        if tipoI.esNumerico() and tipoD.esNumerico():
+            return tipoI
+        return Tipo(TipoPrimitivo.ERROR)
+    
+    def getValor(self, entorno):
+        tipo_tmp = self.getTipo(entorno)
+        if tipo_tmp.esNumerico():
+            valorI = self.expresionI.getValor(entorno)
+            valorD = self.expresionD.getValor(entorno)            
+            self.valor = math.log(valorD, valorI)
+            return self.valor
+        return None
+                
+class Sin(Expresion):
+    def __init__(self, expresion, linea, columna):
+        self.expresion = expresion        
+        self.linea = linea
+        self.columan = columna
+    
+    def getTipo(self, entorno):
+        tipo = self.expresion.getTipo(entorno)        
+        if tipo.esNumerico():
+            return tipo
+        return Tipo(TipoPrimitivo.ERROR)
+    
+    def getValor(self, entorno):
+        tipo_tmp = self.getTipo(entorno)
+        if tipo_tmp.esNumerico():
+            valor = self.expresion.getValor(entorno)            
+            self.valor = math.sin(valor)
+            return self.valor
+        return None
+                
+
+class Cos(Expresion):
+    def __init__(self, expresion, linea, columna):
+        self.expresion = expresion        
+        self.linea = linea
+        self.columan = columna
+    
+    def getTipo(self, entorno):
+        tipo = self.expresion.getTipo(entorno)        
+        if tipo.esNumerico():
+            return tipo
+        return Tipo(TipoPrimitivo.ERROR)
+    
+    def getValor(self, entorno):
+        tipo_tmp = self.getTipo(entorno)
+        if tipo_tmp.esNumerico():
+            valor = self.expresion.getValor(entorno)            
+            self.valor = math.cos(valor)
+            return self.valor
+        return None                
+
+class Tan(Expresion):
+    def __init__(self, expresion, linea, columna):
+        self.expresion = expresion        
+        self.linea = linea
+        self.columan = columna
+    
+    def getTipo(self, entorno):
+        tipo = self.expresion.getTipo(entorno)        
+        if tipo.esNumerico():
+            return tipo
+        return Tipo(TipoPrimitivo.ERROR)
+    
+    def getValor(self, entorno):
+        tipo_tmp = self.getTipo(entorno)
+        if tipo_tmp.esNumerico():
+            valor = self.expresion.getValor(entorno)            
+            self.valor = math.tan(valor)
+            return self.valor
+        return None     
+
+class Sqrt(Expresion):
+    def __init__(self, expresion, linea, columna):
+        self.expresion = expresion        
+        self.linea = linea
+        self.columan = columna
+    
+    def getTipo(self, entorno):
+        tipo = self.expresion.getTipo(entorno)        
+        if tipo.esNumerico():
+            return tipo
+        return Tipo(TipoPrimitivo.ERROR)
+    
+    def getValor(self, entorno):
+        tipo_tmp = self.getTipo(entorno)
+        if tipo_tmp.esNumerico():
+            valor = self.expresion.getValor(entorno)            
+            self.valor = math.sqrt(valor)
+            return self.valor
+        return None     
