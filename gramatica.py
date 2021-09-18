@@ -18,10 +18,13 @@ tokens = (
     'MODULO',
     'AND',
     'OR',
+    'NOT',
     'IGIG',
     'DIFDE',
     'MAY',
     'MEN',
+    'MAYIG',
+    'MENIG',    
     #-------PRIMITIVAS
     'NULO',
     'FLOAT',
@@ -52,23 +55,26 @@ t_MAS = r'\+'
 t_MENOS = r'-'
 t_POR = r'\*'
 t_DIV = r'/'
-t_AND = r'&'
-t_OR = r'\|'
+t_AND = r'&&'
+t_OR = r'\|\|'
+t_NOT = r'!'
 t_IGIG = r'=='
 t_DIFDE = r'!='
+t_MENIG = r'<='
+t_MAYIG = r'>='
 t_MAY = r'>'
 t_MEN = r'<'
 t_POW = r'\^'
 t_MODULO = r'%'
-t_IMPRIMIR = 'println'
-t_UPPERCASE = 'uppercase'
-t_LOWERCASE = 'lowercase'
-t_LOG = 'log'
-t_LOG10 = 'log10'
-t_SIN = 'sin'
-t_COS = 'cos'
-t_TAN = 'tan'
-t_SQRT= 'sqrt'
+t_IMPRIMIR = r'println'
+t_UPPERCASE = r'uppercase'
+t_LOWERCASE = r'lowercase'
+t_LOG = r'log'
+t_LOG10 = r'log10'
+t_SIN = r'sin'
+t_COS = r'cos'
+t_TAN = r'tan'
+t_SQRT= r'sqrt'
 
 
 
@@ -298,6 +304,33 @@ def p_expresion_modulo(t):
     '''e : e MODULO e'''
     t[0] = AST.Modulo(t[1], t[3], t.lineno(1), 0)                 
    
+def p_expresion_mayor(t):
+    '''e : e MAY e '''
+    t[0] = AST.Mayor(t[1], t[3], t.lineno(1), 0)
+
+def p_expresion_menor(t):
+    '''e : e MEN e '''
+    t[0] = AST.Menor(t[1], t[3], t.lineno(1), 0)  
+
+def p_expresion_mayor_igual(t):
+    '''e : e MAYIG e'''
+    t[0] = AST.MayorIgual(t[1], t[3], t.lineno(1), 0)
+
+def p_expresion_menor_igual(t):
+    '''e : e MENIG e'''
+    t[0] = AST.MenorIgual(t[1], t[3], t.lineno(1), 0)
+
+def p_expresion_or(t):
+    '''e : e OR e'''
+    t[0] =  AST.Or(t[1], t[3], t.lineno(1),0)
+
+def p_expresion_and(t):
+    '''e : e AND e'''
+    t[0] =  AST.And(t[1], t[3], t.lineno(1),0)
+
+def p_expresion_not(t):
+    '''e : NOT e '''
+    t[0] = AST.Not(t[2], t.lineno(1), 0)
 
 ## Valores literales -------------------------------------------
 def p_expresion_nulo(t):

@@ -70,8 +70,25 @@ println(lowercase("HOLA")* uppercase("hola"));
 ## Logaritmos
 println(log10(100));
 println(log(2,4));
-println(log(2,4));
 println(sin(45));
 println(cos(45));
 println(tan(45));
 println(sqrt(25));
+println(200>30);
+println(330<330);
+println(330<=330);
+println(330>=330);
+
+println(false || false);
+println(false || true);
+println(true || false);
+println(true || true);
+
+println(false && false);
+println(false && true);
+println(true && false);
+println(true && true);
+
+println(! true);
+println(! false);
+
