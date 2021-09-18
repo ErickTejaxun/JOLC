@@ -5,7 +5,15 @@
 from singlenton import global_utils
 linea = 0 
 columa = 0
-input_init = ''
+input_ANY_init = ''
+
+#Estados 
+states = (
+    ('cadena_impresion', 'exclusive'),
+    ('impresion', 'exclusive'),
+)
+
+
 # tokens definition
 tokens = (
     'PARIZQ',
@@ -48,53 +56,73 @@ tokens = (
     'COMA'
 )
 
-t_PUNTOCOMA=r';'
-t_COMA=r','
-t_PARIZQ = r'\('
-t_PARDER = r'\)'
-t_MAS = r'\+'
-t_MENOS = r'-'
-t_POR = r'\*'
-t_DIV = r'/'
-t_AND = r'&&'
-t_OR = r'\|\|'
-t_NOT = r'!'
-t_IGIG = r'=='
-t_DIFDE = r'!='
-t_MENIG = r'<='
-t_MAYIG = r'>='
-t_MAY = r'>'
-t_MEN = r'<'
-t_POW = r'\^'
-t_MODULO = r'%'
-t_IMPRIMIR = r'print'
-t_IMPRIMIRLN = r'println'
-t_UPPERCASE = r'uppercase'
-t_LOWERCASE = r'lowercase'
-t_LOG = r'log'
-t_LOG10 = r'log10'
-t_SIN = r'sin'
-t_COS = r'cos'
-t_TAN = r'tan'
-t_SQRT= r'sqrt'
+t_ANY_PUNTOCOMA=r';'
+t_ANY_COMA=r','
+t_ANY_PARIZQ = r'\('
+t_ANY_PARDER = r'\)'
+t_ANY_MAS = r'\+'
+t_ANY_MENOS = r'-'
+t_ANY_POR = r'\*'
+t_ANY_DIV = r'/'
+t_ANY_AND = r'&&'
+t_ANY_OR = r'\|\|'
+t_ANY_NOT = r'!'
+t_ANY_IGIG = r'=='
+t_ANY_DIFDE = r'!='
+t_ANY_MENIG = r'<='
+t_ANY_MAYIG = r'>='
+t_ANY_MAY = r'>'
+t_ANY_MEN = r'<'
+t_ANY_POW = r'\^'
+t_ANY_MODULO = r'%'
+t_ANY_UPPERCASE = r'uppercase'
+t_ANY_LOWERCASE = r'lowercase'
+t_ANY_LOG = r'log'
+t_ANY_LOG10 = r'log10'
+t_ANY_SIN = r'sin'
+t_ANY_COS = r'cos'
+t_ANY_TAN = r'tan'
+t_ANY_SQRT= r'sqrt'
 
 
 
 # ignored characters, tab and space
-t_ignore = " \t"
+t_ANY_ignore = " \t"
 
 
-def t_COMMENT(t):
-    r'\#.*'
-    #print("Comentario  " + t.value)
-    pass
+#def t_ANY_COMMENT(t):
+#    r'\#.*'
+#    #print("Comentario  " + t.value)
+#    pass
 
-#def t_COMMENT_MULTI(t):
+def t_ANY_comment(t):
+     r'(\#=(.|\n)*?=\#)|(\#.*)'
+     print(t.value)
+     pass
+
+#def t_ANY_COMMENt_ANY_MULTI(t):
 #    r'(?s)\#=.*?=\#'
 #    print("Comentario multilinea: " + t.value)
 #    pass
 
-def t_CHAR(t):
+def t_ANY_IMPRIMIRLN(t):
+    r'println'
+    t.lexer.begin('cadena_impresion')
+    return t    
+
+
+def t_ANY_IMPRIMIR(t):
+    r'print'
+    t.lexer.begin('cadena_impresion')
+    return t
+
+def t_impresion_PARDER(t):
+    r'\)'
+    t.lexer.begin('INITIAL')
+    return t 
+
+
+def t_ANY_CHAR(t):
     r'\'([^\\\n]|(\\.))*?\''
     string = str(t.value)
     if len(string) == 2 :
@@ -103,16 +131,26 @@ def t_CHAR(t):
         t.value = string[1]
     return t
 
-def t_STRING(t):
+
+def t_INITIAL_STRING(t):
     r'\"([^\\\n]|(\\.))*?\"'
     t.value = t.value[1:-1]
     return t
 
-def t_NULO(t):
+def t_impresion_STRING(t):
+    r'\"'
+    t.lexer.begin('cadena_impresion') 
+
+def t_cadena_impresion_STRING(t):
+    r'\"'
+    t.lexer.begin('cadena')
+
+
+def t_ANY_NULO(t):
     r'nothing'    
     return t
 
-def t_FLOAT(t):
+def t_ANY_FLOAT(t):
     r'\d+\.\d+'
     try:
         t.value = float(t.value)
@@ -121,7 +159,7 @@ def t_FLOAT(t):
         t.value = 0
     return t
 
-def t_ENTERO(t):
+def t_ANY_ENTERO(t):
     r'\d+'
     try:
         t.value = int(t.value)
@@ -131,28 +169,28 @@ def t_ENTERO(t):
         t.value = 0
     return t
 
-def t_RTRUE(t):
+def t_ANY_RTRUE(t):
     r'true'
     t.value = True    
     return t
 
-def t_RFALSE(t):
+def t_ANY_RFALSE(t):
     r'false'
     t.value = False    
     return t
     
 
-def t_line(t):
+def t_ANY_line(t):
     r'\n+'
     t.lexer.lineno += len(t.value)
     
-def t_error(t):        
+def t_ANY_error(t):        
     global_utils.registryLexicalError(t.value[0],'Caracter ilegal.', t.lexer.lineno, find_column(t))
     t.lexer.skip(1)
 
 def find_column(token):
-    global input_init
-    line_start = input_init.rfind('\n', 0, token.lexpos) + 1
+    global input_ANY_init
+    line_start = input_ANY_init.rfind('\n', 0, token.lexpos) + 1
     return (token.lexpos - line_start) + 1
 
 
@@ -390,10 +428,10 @@ import ply.yacc as yacc
 parser = yacc.yacc()
 
 def parse(input):
-    global input_init
+    global input_ANY_init
     global linea
     global columna
-    input_init = input
+    input_ANY_init = input
     linea = 0 
     columa = 0
     return parser.parse(input,tracking=True)

@@ -195,7 +195,7 @@ class Imprimir(Instruccion):
         cadena = ''
         for exp in self.lista_expresiones:
             valor = exp.getValor(entorno)
-            cadena = cadena + valor
+            cadena = str(cadena) + str(valor)
         entorno.tabla.imprimir(cadena)
 
 class ImprimirLn(Instruccion):
@@ -208,7 +208,7 @@ class ImprimirLn(Instruccion):
         cadena = ''
         for exp in self.lista_expresiones:
             valor = exp.getValor(entorno)
-            cadena = cadena + valor
+            cadena = str(cadena) + str(valor)
         entorno.tabla.imprimirln(cadena)        
 
 ## Expresion -----------------------------------------------------

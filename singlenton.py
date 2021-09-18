@@ -45,7 +45,7 @@ class Singlenton(metaclass=SinglentonMeta):
         global  _file_
         _error_counter = 0
         _file_ = ''
-        _errors = []
+        self._errors = []
 
     def registryError(self, id, desc, line, column):
         self._errors.append(Error(id, type, desc, line, column))
