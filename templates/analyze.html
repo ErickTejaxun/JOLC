@@ -52,7 +52,12 @@
                 {
                     toastr.warning('Se han encontrado errores. Por favor vea el área de reportes');
                 }
-            }        
+            },
+            error: function(error)
+            {
+                toastr.error('Error al conectar con el servidor');
+            }
+
         });
     }
 </script><script type=""

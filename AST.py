@@ -251,6 +251,29 @@ class Suma(Expresion):
         
         return None
 
+class Concatenacion(Expresion):
+    def __init__(self, expresionI, expresionD, linea, columna):
+        self.expresionI = expresionI
+        self.expresionD = expresionD
+        self.linea = linea
+        self.columna = columna
+    
+    def getTipo(self, entorno):
+        tipoI = self.expresionI.getTipo(entorno)
+        tipoD = self.expresionD.getTipo(entorno)
+
+        if tipoI.esError() or tipoD.esError():
+            return Tipo(TipoPrimitivo.ERROR)
+        return Tipo(TipoPrimitivo.STRING)
+    
+    def getValor(self, entorno):
+        tipo_tmp = self.getTipo(entorno)
+        if tipo_tmp.esError():
+            return None
+        valorI = self.expresionI.getValor(entorno)
+        valorD = self.expresionD.getValor(entorno)        
+        return str(valorI) + str(valorD)
+
 
 class Resta(Expresion):
     def __init__(self, expresionI, expresionD, linea, columna):

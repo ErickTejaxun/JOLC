@@ -7,11 +7,13 @@ linea = 0
 columa = 0
 input_ANY_init = ''
 string_cadena_impresion = '' 
+bandera_estado_cadena = 0
 
 #Estados 
 states = (
     ('cadena', 'exclusive'),
     ('impresion', 'exclusive'),
+    ('expresion', 'exclusive')
 )
 
 
@@ -55,13 +57,14 @@ tokens = (
     #----------->
     'PUNTOCOMA',
     'COMA',
-    'COMILLA'
+    'COMILLA',
+    'DOLAR'
 )
 
 t_ANY_PUNTOCOMA=r';'
 t_ANY_COMA=r','
-t_ANY_PARIZQ = r'\('
-t_INITIAL_cadena_PARDER = r'\)'
+t_INITIAL_cadena_impresion_PARIZQ = r'\('
+t_INITIAL_cadena_impresion_PARDER = r'\)'
 t_ANY_MAS = r'\+'
 t_ANY_MENOS = r'-'
 t_ANY_POR = r'\*'
@@ -89,10 +92,13 @@ t_ANY_SQRT= r'sqrt'
 
 
 # ignored characters, tab and space
-t_ANY_ignore = " \t"
+t_INITIAL_impresion_ignore = " \t"
 
 def t_ANY_comment(t):
      r'(\#=(.|\n)*?=\#)|(\#.*)'
+     saltos = str(t.value).count('\n')
+     if saltos > 0 :
+        t.lexer.lineno += saltos
      #print(t.value)     
      pass
 
@@ -137,12 +143,33 @@ def t_cadena_STRING(t):
     t.lexer.begin('impresion')
     return t
 
+def t_cadena_DOLAR(t):
+    r'\$'   
+    t.value = string_cadena_impresion
+    t.lexer.begin('expresion')    
+    return t     
+
 def t_cadena_COMILLA(t):
-    r'.'    
+    r'.'
     if t.value == '\n':
-        t.lexer.lineno += 1
+        t.lexer.lineno += 1            
     global string_cadena_impresion
     string_cadena_impresion = string_cadena_impresion + str(t.value)    
+
+contador_parentesis = 0
+def t_expresion_PARIZQ(t):
+    r'\('
+    global contador_parentesis
+    contador_parentesis += 1
+    return t
+
+def t_expresion_PARDER(t):
+    r'\('
+    global contador_parentesis
+    contador_parentesis -= 1
+    if contador_parentesis == 0:
+        t.lexer.begin('impresion')
+    return t
 
 
 def t_ANY_NULO(t):
@@ -252,6 +279,18 @@ def p_instruccion_imprimirln(t):
 def p_instruccion_imprimir(t):
     '''imprimir : IMPRIMIR PARIZQ lista_e PARDER PUNTOCOMA '''
     t[0]= AST.Imprimir(t[3], t.lineno(1), 0)
+
+def p_imprimir_operacion(t):
+    ''' imprimir_operacion : DOLAR PARIZQ e PARDER'''
+    t[0] = t[3]
+
+def p_cadena_impresion_1(t):
+    ''' cadena_impresion : cadena_impresion e '''
+    t[0] = AST.Concatenacion(t[1], t[2], t.lineno(1), 0 )
+
+def p_cadena_impresion_2(t):
+    ''' cadena_impresion : STRING '''
+    t[0] = AST.String(t[1], t.lineno(1), 0) 
 
 def p_lista_expresion(t):
     ''' lista_e : lista_e COMA e '''
