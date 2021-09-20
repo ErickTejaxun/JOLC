@@ -9,6 +9,7 @@ input_ANY_init = ''
 string_cadena_impresion = '' 
 bandera_estado_cadena = 0
 final_cadena = False
+flag_impresion = False
 
 #Estados 
 states = (
@@ -145,6 +146,8 @@ def t_INITIAL_TSTRING(t):
 def t_INITIAL_IMPRIMIRLN(t):
     r'println'
     global final_cadena 
+    global flag_impresion
+    flag_impresion = True
     final_cadena = False    
     t.lexer.begin('impresion')
     return t    
@@ -152,6 +155,8 @@ def t_INITIAL_IMPRIMIRLN(t):
 def t_INITIAL_IMPRIMIR(t):
     r'print'
     global final_cadena 
+    global flag_impresion
+    flag_impresion = True    
     final_cadena = False
     t.lexer.begin('impresion')
     return t
@@ -169,13 +174,15 @@ def t_ANY_RFALSE(t):
     t.value = False    
     return t
 
-def t_INITIAL_expresion_ID(t):
+def t_INITIAL_expresion_impresion_ID(t):
      r'[a-zA-Z_][a-zA-Z_0-9]*'
      #t.type = reserved.get(t.value,'ID')    # Check for reserved words
      return t
 
 def t_impresion_PARDER(t):
     r'\)'
+    global flag_impresion
+    flag_impresion = False    
     t.lexer.begin('INITIAL')
     return t 
 
@@ -192,69 +199,6 @@ def t_INITIAL_STRING(t):
     r'\"([^\\\n]|(\\.))*?\"'
     t.value = t.value[1:-1]
     return t
-
-def t_impresion_STRING(t):
-    r'\"'
-    global string_cadena_impresion
-    global final_cadena     
-    if final_cadena == False:
-        string_cadena_impresion  = ''        
-        final_cadena = True          
-        t.lexer.begin('cadena') 
-        pass
-    else:
-        t.value = string_cadena_impresion
-        t.lexer.begin('INITIAL')
-        final_cadena = False
-        return t        
-
-def t_cadena_STRING(t):
-    r'\"'     
-    global final_cadena 
-    if final_cadena is True :
-        t.value = string_cadena_impresion
-        t.lexer.begin('INITIAL')
-        final_cadena = False
-        return t
-    t.value = string_cadena_impresion    
-    t.lexer.begin('impresion')
-    pass
-
-def t_cadena_DOLAR(t):
-    r'\$'  
-    global final_cadena 
-    global string_cadena_impresion
-    #final_cadena = True        
-    t.value = string_cadena_impresion
-    t.lexer.begin('expresion')        
-    string_cadena_impresion  = '' 
-    return t     
-
-def t_cadena_COMILLA(t):
-    r'.'
-    if t.value == '\n':
-        t.lexer.lineno += 1            
-    global string_cadena_impresion
-    string_cadena_impresion = string_cadena_impresion + str(t.value)    
-    pass
-
-contador_parentesis = 0
-def t_expresion_PARIZQ(t):
-    r'\('
-    global contador_parentesis
-    contador_parentesis += 1
-    return t
-
-def t_expresion_PARDER(t):
-    r'\)'
-    global contador_parentesis
-    contador_parentesis -= 1
-    if contador_parentesis == 0:
-        t.lexer.begin('cadena')
-    return t
-
-
-
 
 def t_ANY_FLOAT(t):
     r'\d+\.\d+'
@@ -275,17 +219,82 @@ def t_ANY_ENTERO(t):
         t.value = 0
     return t
 
-
-    
+   
 
 def t_ANY_line(t):
     r'\n+'
     t.lexer.lineno += len(t.value)
 
+# Inicio de una cadena
+def t_impresion_STRING(t):
+    r'\"'
+    global string_cadena_impresion
+    global final_cadena     
+    if final_cadena == False:
+        string_cadena_impresion  = ''        
+        final_cadena = True          
+        t.lexer.begin('cadena') 
+        pass
+    else:
+        t.value = string_cadena_impresion
+        t.lexer.begin('INITIAL')
+        final_cadena = False
+        #return t  
+        pass      
+
+# Fin de la cadena
+def t_cadena_STRING(t):
+    r'\"'     
+    global final_cadena 
+    global flag_impresion
+    global string_cadena_impresion    
+    '''
+    if final_cadena is True :
+        t.value = string_cadena_impresion        
+        final_cadena = False
+        return t
+    t.value = string_cadena_impresion
+    '''
+    t.value = string_cadena_impresion
+    t.lexer.begin('impresion')
+    return t
+
+def t_cadena_DOLAR(t):
+    r'\$'  
+    global final_cadena 
+    global string_cadena_impresion
+    #final_cadena = True        
+    t.value = string_cadena_impresion
+    t.lexer.begin('expresion')        
+    string_cadena_impresion  = '' 
+    return t     
+
+contador_parentesis = 0
+def t_expresion_PARIZQ(t):
+    r'\('
+    global contador_parentesis
+    contador_parentesis += 1
+    return t
+
+def t_expresion_PARDER(t):
+    r'\)'
+    global contador_parentesis
+    contador_parentesis -= 1
+    if contador_parentesis == 0:
+        t.lexer.begin('cadena')
+    return t
 
 def t_ANY_error(t):        
     global_utils.registryLexicalError(t.value[0],'Caracter ilegal.', t.lexer.lineno, find_column(t))
     t.lexer.skip(1)
+
+def t_cadena_COMILLA(t):
+    r'.'
+    if t.value == '\n':
+        t.lexer.lineno += 1            
+    global string_cadena_impresion
+    string_cadena_impresion = string_cadena_impresion + str(t.value)    
+    pass
 
 
 
