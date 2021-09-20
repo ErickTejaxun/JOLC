@@ -73,6 +73,12 @@ tokens = (
 
 )
 
+#tipos primitivos
+#t_INITIAL_TINT64 = r'Int64'
+#t_INITIAL_TFLOAT64 = r'Float64'
+#t_INITIAL_TBOOL = r'Bool'
+#t_INITIAL_TCHAR = r'Char'
+#t_INITIAL_TSTRING = r'String'
 t_ANY_PUNTOCOMA=r';'
 t_ANY_COMA=r','
 t_INITIAL_cadena_impresion_PARIZQ = r'\('
@@ -102,23 +108,11 @@ t_ANY_COS = r'cos'
 t_ANY_TAN = r'tan'
 t_ANY_SQRT= r'sqrt'
 t_INITIAL_DPUNTOS = r'::'
-#tipos primitivos
-t_INITIAL_TINT64 = r'Int64'
-t_INITIAL_TFLOAT64 = r'Float64'
-t_INITIAL_TBOOL = r'Bool'
-t_INITIAL_TCHAR = r'Char'
-t_INITIAL_TSTRING = r'String'
 
 
 
 # ignored characters, tab and space
 t_INITIAL_impresion_ignore = " \t"
-
-def t_ANY_ID(t):
-     r'[a-zA-Z_][a-zA-Z_0-9]*'
-     #t.type = reserved.get(t.value,'ID')    # Check for reserved words
-     return t
-
 
 def t_ANY_comment(t):
      r'(\#=(.|\n)*?=\#)|(\#.*)'
@@ -127,6 +121,26 @@ def t_ANY_comment(t):
         t.lexer.lineno += saltos
      #print(t.value)     
      pass
+
+def t_INITIAL_TINT64(t):
+    r'Int64'
+    return t
+
+def t_INITIAL_TFLOAT64(t):
+    r'Float64'
+    return t 
+
+def t_INITIAL_TBOOL(t):
+    r'Bool'
+    return t
+
+def t_INITIAL_TCHAR(t):
+    r'Char'
+    return t
+
+def t_INITIAL_TSTRING(t):
+    r'String'
+    return t
 
 def t_INITIAL_IMPRIMIRLN(t):
     r'println'
@@ -137,6 +151,11 @@ def t_INITIAL_IMPRIMIR(t):
     r'print'
     t.lexer.begin('impresion')
     return t
+
+def t_INITIAL_expresion_ID(t):
+     r'[a-zA-Z_][a-zA-Z_0-9]*'
+     #t.type = reserved.get(t.value,'ID')    # Check for reserved words
+     return t
 
 def t_impresion_PARDER(t):
     r'\)'
@@ -254,10 +273,13 @@ def t_ANY_RFALSE(t):
 def t_ANY_line(t):
     r'\n+'
     t.lexer.lineno += len(t.value)
-    
+
+
 def t_ANY_error(t):        
     global_utils.registryLexicalError(t.value[0],'Caracter ilegal.', t.lexer.lineno, find_column(t))
     t.lexer.skip(1)
+
+
 
 def find_column(token):
     global input_ANY_init
@@ -328,7 +350,7 @@ def p_lista_instrucciones_declaracion(t):
 
 def p_instruccion_declaracion(t):
     ''' declaracion : ID IGUAL e DPUNTOS tipo PUNTOCOMA'''
-    t[0] = AST.Declaracion(t[1], t[3], t[4], t.lineno(1), 0)
+    t[0] = AST.Declaracion(t[1], t[3], t[5], t.lineno(1), 0)
 
 def p_instruccion_declaracion_sintipo(t):
     ''' declaracion : ID IGUAL e PUNTOCOMA'''
@@ -550,7 +572,7 @@ def p_expresion_string_2(t):
 
 def p_expresion_variable(t):
     '''e : ID'''
-    t[0] = AST.Variable(t[t1], t.lineno(1), 0 )
+    t[0] = AST.Variable(t[1], t.lineno(1), 0 )
 
 
 def p_error(t):         

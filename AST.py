@@ -232,12 +232,11 @@ class Declaracion(Instruccion):
         # Verificamos que el valor coinicida con el tipo indicado
         if self.tipo is not None:
             tipo_tmp = self.expresion.getTipo(entorno)
-            if not tipo_tmp.compararTipo(tipo):
-                global_utils.registrySemanticError('Declaracion', 'Se esperaba un valor de tipo' + tipo.getNombre() + ', se obtuvo un valor de tipo ' + tmp_tipo.getNombre(), self.linea, self.columna)
+            if not tipo_tmp.compararTipo(self.tipo):
+                global_utils.registrySemanticError('Declaracion', 'Se esperaba un valor de tipo' + self.tipo.getNombre() + ', se obtuvo un valor de tipo ' + tipo_tmp.getNombre(), self.linea, self.columna)
                 return
             valor = self.expresion.getValor(entorno)
-            nuevo_simbolo = Simbolo(id, tipo, linea, columna)
-            nuevo_simbolo.valor = valor
+            nuevo_simbolo = Simbolo(self.id, self.tipo, valor, self.linea, self.columna)            
             entorno.tabla.registrarSimbolo(nuevo_simbolo)
         else: 
             tipo_tmp = self.expresion.getTipo(entorno)        
@@ -586,14 +585,14 @@ class Variable(Expresion):
     def getTipo(self, entorno):
         tmp_simbolo = entorno.getSimbolo(self.id)
         if tmp_simbolo is None:
-            global_utils.registrySemanticError(id,'No se ha encontrado la variable solicitada ' +id , self.linea, self.columna)
+            global_utils.registrySemanticError(self.id,'No se ha encontrado la variable solicitada ' +self.id , self.linea, self.columna)
             return None
         return tmp_simbolo.tipo
 
     def getValor(self, entorno):
         tmp_simbolo = entorno.getSimbolo(self.id)
         if tmp_simbolo is None:
-            global_utils.registrySemanticError(id,'No se ha encontrado la variable solicitada ' +id , self.linea, self.columna)
+            global_utils.registrySemanticError(self.id,'No se ha encontrado la variable solicitada ' +self.id , self.linea, self.columna)
             return None
         return tmp_simbolo.valor
 
