@@ -197,6 +197,8 @@ class Imprimir(Instruccion):
         cadena = ''
         for exp in self.lista_expresiones:
             valor = exp.getValor(entorno)
+            if valor == None:
+                valor = 'nothing'
             cadena = str(cadena) + str(valor)
         entorno.tabla.imprimir(cadena)
 
@@ -210,6 +212,8 @@ class ImprimirLn(Instruccion):
         cadena = ''
         for exp in self.lista_expresiones:
             valor = exp.getValor(entorno)
+            if valor == None:
+                valor = 'nothing'            
             cadena = str(cadena) + str(valor)
         entorno.tabla.imprimirln(cadena) 
 
@@ -221,28 +225,36 @@ class Declaracion(Instruccion):
         self.linea = linea
         self.columna = columna
     
-    def ejecutar(self, entorno):
-        # Primero verificamos que no haya una variable con el mismo nombre 
-        # Ya declarada
+    def ejecutar(self, entorno):                
         val_tmp = entorno.tabla.getSimbolo(self.id)
         if val_tmp is not None:
-            global_utils.registrySemanticError('Declaracion', 'Ya existe una variable local con el id ' + id, self.linea, self.columna)
+            # Asignacion porque el ID ya existe.
+            nuevo_tipo = self.expresion.getTipo(entorno)
+            if nuevo_tipo.compararTipo(val_tmp.tipo):            
+                val_nuevo = self.expresion.getValor(entorno)
+                val_tmp.valor = val_nuevo
+            else:
+                global_utils.registrySemanticError('Asignacion', 'Tipo incorrecto, se esperaba un valor de tipo ' +val_tmp.tipo.getNombre() + ' y se ha recibido un valor de tipo '+ nuevo_tipo.getNombre(), self.linea, self.columna)
             return 
-        #
-        # Verificamos que el valor coinicida con el tipo indicado
-        if self.tipo is not None:
-            tipo_tmp = self.expresion.getTipo(entorno)
-            if not tipo_tmp.compararTipo(self.tipo):
-                global_utils.registrySemanticError('Declaracion', 'Se esperaba un valor de tipo' + self.tipo.getNombre() + ', se obtuvo un valor de tipo ' + tipo_tmp.getNombre(), self.linea, self.columna)
-                return
-            valor = self.expresion.getValor(entorno)
-            nuevo_simbolo = Simbolo(self.id, self.tipo, valor, self.linea, self.columna)            
-            entorno.tabla.registrarSimbolo(nuevo_simbolo)
-        else: 
-            tipo_tmp = self.expresion.getTipo(entorno)        
-            valor = self.expresion.getValor(entorno)
-            nuevo_simbolo = Simbolo(self.id, tipo_tmp, valor, self.linea, self.columna)            
-            entorno.tabla.registrarSimbolo(nuevo_simbolo)        
+        else:
+            # Nueva variable
+            if self.tipo is not None:                
+                tipo_tmp = self.expresion.getTipo(entorno)
+                if tipo_tmp is not None:
+                    if not tipo_tmp.compararTipo(self.tipo):
+                        global_utils.registrySemanticError('Declaracion',  self.id + '. Se esperaba un valor de tipo ' + self.tipo.getNombre() + ', se obtuvo un valor de tipo ' + tipo_tmp.getNombre(), self.linea, self.columna)
+                        return
+                    valor = self.expresion.getValor(entorno)
+                    nuevo_simbolo = Simbolo(self.id, self.tipo, valor, self.linea, self.columna)            
+                    entorno.tabla.registrarSimbolo(nuevo_simbolo)
+                else:
+                    global_utils.registrySemanticError('Declaracion', self.id + '. Se esperaba un valor de tipo ' + self.tipo.getNombre() + ' y no se ha obtenido valor. ', self.linea, self.columna) 
+            else: 
+                # O puede ser una asignación
+                tipo_tmp = self.expresion.getTipo(entorno)        
+                valor = self.expresion.getValor(entorno)
+                nuevo_simbolo = Simbolo(self.id, tipo_tmp, valor, self.linea, self.columna)            
+                entorno.tabla.registrarSimbolo(nuevo_simbolo)        
 
 
 

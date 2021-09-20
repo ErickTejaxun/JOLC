@@ -156,6 +156,19 @@ def t_INITIAL_IMPRIMIR(t):
     t.lexer.begin('impresion')
     return t
 
+def t_ANY_NULO(t):
+    r'nothing'    
+    return t
+def t_ANY_RTRUE(t):
+    r'true'
+    t.value = True    
+    return t
+
+def t_ANY_RFALSE(t):
+    r'false'
+    t.value = False    
+    return t
+
 def t_INITIAL_expresion_ID(t):
      r'[a-zA-Z_][a-zA-Z_0-9]*'
      #t.type = reserved.get(t.value,'ID')    # Check for reserved words
@@ -241,9 +254,7 @@ def t_expresion_PARDER(t):
     return t
 
 
-def t_ANY_NULO(t):
-    r'nothing'    
-    return t
+
 
 def t_ANY_FLOAT(t):
     r'\d+\.\d+'
@@ -264,15 +275,7 @@ def t_ANY_ENTERO(t):
         t.value = 0
     return t
 
-def t_ANY_RTRUE(t):
-    r'true'
-    t.value = True    
-    return t
 
-def t_ANY_RFALSE(t):
-    r'false'
-    t.value = False    
-    return t
     
 
 def t_ANY_line(t):
