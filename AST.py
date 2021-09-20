@@ -49,15 +49,15 @@ class Tipo():
         if self.tipo == TipoPrimitivo.NULO:
             return 'nulo'
         if self.tipo == TipoPrimitivo.ENTERO:
-            return 'entero'
+            return 'Int64'
         if self.tipo ==  TipoPrimitivo.FLOAT:
-            return 'float'
+            return 'Float64'
         if self.tipo ==  TipoPrimitivo.BOOL:
-            return 'bool'
+            return 'Bool'
         if self.tipo ==  TipoPrimitivo.CHAR:
             return 'char'
         if self.tipo ==  TipoPrimitivo.STRING:
-            return 'cadena'
+            return 'String'
         if self.tipo ==  TipoPrimitivo.ARREGLO:
             return 'arreglo'
         if self.tipo ==  TipoPrimitivo.STRUCT:
@@ -81,6 +81,8 @@ class Tipo():
         return self.tipo == TipoPrimitivo.ERROR
     def esNumerico(self):
         return self.tipo == TipoPrimitivo.ENTERO or self.tipo == TipoPrimitivo.FLOAT 
+    def compararTipo(self, tipo):
+        return self.tipo == tipo.tipo
 
 
 class Simbolo():
@@ -101,15 +103,15 @@ class Simbolo():
 '''Tabla de símbolos -------------------------------------------'''
 class TablaSimbolo():
     def __init__(self):
-        self.tabla = []
+        self.tabla = {}
         self.consola = []
 
     def registrarSimbolo(self, simbolo):
-        self.tabla.append(simbolo)
+        self.tabla[simbolo.id] = simbolo
     
     def getSimbolo(self, id):
         entornoActual = self
-        return self.tabla[id]
+        return self.tabla.get(id)
     
     def imprimirln(self, valor):
         self.consola.append(str(valor))
@@ -209,7 +211,43 @@ class ImprimirLn(Instruccion):
         for exp in self.lista_expresiones:
             valor = exp.getValor(entorno)
             cadena = str(cadena) + str(valor)
-        entorno.tabla.imprimirln(cadena)        
+        entorno.tabla.imprimirln(cadena) 
+
+class Declaracion(Instruccion):
+    def __init__(self, id, expresion, tipo , linea, columna):
+        self.id = id
+        self.expresion = expresion
+        self.tipo = tipo
+        self.linea = linea
+        self.columna = columna
+    
+    def ejecutar(self, entorno):
+        # Primero verificamos que no haya una variable con el mismo nombre 
+        # Ya declarada
+        val_tmp = entorno.tabla.getSimbolo(self.id)
+        if val_tmp is not None:
+            global_utils.registrySemanticError('Declaracion', 'Ya existe una variable local con el id ' + id, self.linea, self.columna)
+            return 
+        #
+        # Verificamos que el valor coinicida con el tipo indicado
+        if self.tipo is not None:
+            tipo_tmp = self.expresion.getTipo(entorno)
+            if not tipo_tmp.compararTipo(tipo):
+                global_utils.registrySemanticError('Declaracion', 'Se esperaba un valor de tipo' + tipo.getNombre() + ', se obtuvo un valor de tipo ' + tmp_tipo.getNombre(), self.linea, self.columna)
+                return
+            valor = self.expresion.getValor(entorno)
+            nuevo_simbolo = Simbolo(id, tipo, linea, columna)
+            nuevo_simbolo.valor = valor
+            entorno.tabla.registrarSimbolo(nuevo_simbolo)
+        else: 
+            tipo_tmp = self.expresion.getTipo(entorno)        
+            valor = self.expresion.getValor(entorno)
+            nuevo_simbolo = Simbolo(self.id, tipo_tmp, valor, self.linea, self.columna)            
+            entorno.tabla.registrarSimbolo(nuevo_simbolo)        
+
+
+
+
 
 ## Expresion -----------------------------------------------------
 
@@ -225,7 +263,7 @@ class Suma(Expresion):
         tipoD = self.expresionD.getTipo(entorno)
 
         if(tipoI.esCadena() or tipoD.esCadena()):        
-            global_utils.registrySemanticError('+','Error Semántico. No es posible realizar la operación ' + tipoI.getNombre() + " + " + tipoD.getNombre() , self.linea, self.columna)
+            global_utils.registrySemanticError('+',' No es posible realizar la operación ' + tipoI.getNombre() + " + " + tipoD.getNombre() , self.linea, self.columna)
             return Tipo(TipoPrimitivo.ERROR)
         if(tipoI.esFloat() or tipoD.esFloat()):
             return Tipo(TipoPrimitivo.FLOAT)
@@ -291,7 +329,7 @@ class Resta(Expresion):
                 return Tipo(TipoPrimitivo.FLOAT)
             return Tipo(TipoPrimitivo.ENTERO)
 
-        global_utils.registrySemanticError('-','Error Semántico. No es posible realizar la operación ' + tipoI.getNombre() + " - " + tipoD.getNombre(), self.linea, self.columna)
+        global_utils.registrySemanticError('-',' No es posible realizar la operación ' + tipoI.getNombre() + " - " + tipoD.getNombre(), self.linea, self.columna)
         return Tipo(TipoPrimitivo.ERROR)        
     
     def getValor(self, entorno):
@@ -335,7 +373,7 @@ class Multiplicacion(Expresion):
                 return Tipo(TipoPrimitivo.FLOAT)
             return Tipo(TipoPrimitivo.ENTERO)
 
-        global_utils.registrySemanticError('*','Error Semántico. No es posible realizar la operación ' + tipoI.getNombre() + " * " + tipoD.getNombre() , self.linea, self.columna)
+        global_utils.registrySemanticError('*',' No es posible realizar la operación ' + tipoI.getNombre() + " * " + tipoD.getNombre() , self.linea, self.columna)
         return Tipo(TipoPrimitivo.ERROR)        
     
     def getValor(self, entorno):
@@ -376,7 +414,7 @@ class Division(Expresion):
         if (tipoI.esNumerico() and tipoD.esNumerico()):
             return Tipo(TipoPrimitivo.FLOAT)
 
-        global_utils.registrySemanticError('/','Error Semántico. No es posible realizar la operación ' + tipoI.getNombre() + " / " + tipoD.getNombre() , self.linea, self.columna)
+        global_utils.registrySemanticError('/',' No es posible realizar la operación ' + tipoI.getNombre() + " / " + tipoD.getNombre() , self.linea, self.columna)
         return Tipo(TipoPrimitivo.ERROR)        
     
     def getValor(self, entorno):
@@ -419,7 +457,7 @@ class Potencia(Expresion):
         if (tipoI.esCadena() and tipoD.esEntero()):
             return Tipo(TipoPrimitivo.STRING)
 
-        global_utils.registrySemanticError('^','Error Semántico. No es posible realizar la operación ' + tipoI.getNombre() + " ^ " + tipoD.getNombre() , self.linea, self.columna)
+        global_utils.registrySemanticError('^',' No es posible realizar la operación ' + tipoI.getNombre() + " ^ " + tipoD.getNombre() , self.linea, self.columna)
         return Tipo(TipoPrimitivo.ERROR)        
     
     def getValor(self, entorno):
@@ -468,7 +506,7 @@ class Modulo(Expresion):
                 return Tipo(TipoPrimitivo.FLOAT)
             return Tipo(TipoPrimitivo.ENTERO)
 
-        global_utils.registrySemanticError('-','Error Semántico. No es posible realizar la operación ' + tipo.getNombre() + " - " + tipo.getNombre() , self.linea, self.columna)
+        global_utils.registrySemanticError('-',' No es posible realizar la operación ' + tipo.getNombre() + " - " + tipo.getNombre() , self.linea, self.columna)
         return Tipo(TipoPrimitivo.ERROR)        
     
     def getValor(self, entorno):
@@ -504,7 +542,7 @@ class Negativo(Expresion):
                 return Tipo(TipoPrimitivo.FLOAT)
             return Tipo(TipoPrimitivo.ENTERO)
 
-        global_utils.registrySemanticError('-','Error Semántico. No es posible realizar la operación (-) ' + tipo.getNombre() , self.linea, self.columna)
+        global_utils.registrySemanticError('-',' No es posible realizar la operación (-) ' + tipo.getNombre() , self.linea, self.columna)
         return Tipo(TipoPrimitivo.ERROR)        
     
     def getValor(self, entorno):
@@ -539,6 +577,26 @@ class Nulo(Expresion):
     def getTipo(self, entorno):
         return self.tipo
 
+class Variable(Expresion):
+    def __init__(self, id, linea, columna):
+        self.id = id 
+        self.linea = linea 
+        self.columna = columna
+    
+    def getTipo(self, entorno):
+        tmp_simbolo = entorno.getSimbolo(self.id)
+        if tmp_simbolo is None:
+            global_utils.registrySemanticError(id,'No se ha encontrado la variable solicitada ' +id , self.linea, self.columna)
+            return None
+        return tmp_simbolo.tipo
+
+    def getValor(self, entorno):
+        tmp_simbolo = entorno.getSimbolo(self.id)
+        if tmp_simbolo is None:
+            global_utils.registrySemanticError(id,'No se ha encontrado la variable solicitada ' +id , self.linea, self.columna)
+            return None
+        return tmp_simbolo.valor
+
 class Entero(Expresion):
     def __init__(self, valor, linea, columna):
         self.valor = valor
@@ -550,7 +608,7 @@ class Entero(Expresion):
         return self.valor
     
     def getTipo(self, entorno):
-        return self.tipo
+        return self.tipo        
 
 class Float(Expresion):
     def __init__(self, valor, linea, columna):
@@ -958,4 +1016,6 @@ class Not(Expresion):
             self.valor = not valor
             return self.valor
         return None
+
+
 

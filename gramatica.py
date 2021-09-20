@@ -36,7 +36,9 @@ tokens = (
     'MAY',
     'MEN',
     'MAYIG',
-    'MENIG',    
+    'MENIG',
+    'IGUAL',
+    'DPUNTOS',
     #-------PRIMITIVAS
     'NULO',
     'FLOAT',
@@ -59,7 +61,16 @@ tokens = (
     'PUNTOCOMA',
     'COMA',
     'COMILLA',
-    'DOLAR'
+    'DOLAR',
+    #...........>
+    'ID',
+    #----Tipos
+    'TINT64',
+    'TFLOAT64',
+    'TBOOL',
+    'TCHAR',
+    'TSTRING'
+
 )
 
 t_ANY_PUNTOCOMA=r';'
@@ -73,6 +84,7 @@ t_ANY_DIV = r'/'
 t_ANY_AND = r'&&'
 t_ANY_OR = r'\|\|'
 t_ANY_NOT = r'!'
+t_INITIAL_IGUAL = r'='
 t_ANY_IGIG = r'=='
 t_ANY_DIFDE = r'!='
 t_ANY_MENIG = r'<='
@@ -89,11 +101,24 @@ t_ANY_SIN = r'sin'
 t_ANY_COS = r'cos'
 t_ANY_TAN = r'tan'
 t_ANY_SQRT= r'sqrt'
+t_INITIAL_DPUNTOS = r'::'
+#tipos primitivos
+t_INITIAL_TINT64 = r'Int64'
+t_INITIAL_TFLOAT64 = r'Float64'
+t_INITIAL_TBOOL = r'Bool'
+t_INITIAL_TCHAR = r'Char'
+t_INITIAL_TSTRING = r'String'
 
 
 
 # ignored characters, tab and space
 t_INITIAL_impresion_ignore = " \t"
+
+def t_ANY_ID(t):
+     r'[a-zA-Z_][a-zA-Z_0-9]*'
+     #t.type = reserved.get(t.value,'ID')    # Check for reserved words
+     return t
+
 
 def t_ANY_comment(t):
      r'(\#=(.|\n)*?=\#)|(\#.*)'
@@ -281,6 +306,11 @@ def p_lista_instrucciones_2(t):
     t[1].agregarInstruccion(t[2])
     t[0] = t[1]
 
+def p_lista_instrucciones_3(t):
+    '''lista_instrucciones : lista_instrucciones declaracion'''
+    t[1].agregarInstruccion(t[2])
+    t[0] = t[1]
+
 def p_lista_instrucciones_imprimir(t):
     '''lista_instrucciones : imprimir'''
     t[0] = AST.Bloque(t.lineno(1), 0)
@@ -290,6 +320,39 @@ def p_lista_instrucciones_imprimirln(t):
     '''lista_instrucciones : imprimirln'''
     t[0] = AST.Bloque(t.lineno(1), 0)
     t[0].agregarInstruccion(t[1])
+
+def p_lista_instrucciones_declaracion(t):
+    '''lista_instrucciones : declaracion'''
+    t[0] = AST.Bloque(t.lineno(1), 0)
+    t[0].agregarInstruccion(t[1])
+
+def p_instruccion_declaracion(t):
+    ''' declaracion : ID IGUAL e DPUNTOS tipo PUNTOCOMA'''
+    t[0] = AST.Declaracion(t[1], t[3], t[4], t.lineno(1), 0)
+
+def p_instruccion_declaracion_sintipo(t):
+    ''' declaracion : ID IGUAL e PUNTOCOMA'''
+    t[0] = AST.Declaracion(t[1], t[3], None, t.lineno(1), 0)    
+
+def p_tipo_int64(t):
+    ''' tipo : TINT64'''
+    t[0] = AST.Tipo(AST.TipoPrimitivo.ENTERO)
+
+def p_tipo_float64(t):
+    ''' tipo : TFLOAT64 '''
+    t[0] = AST.Tipo(AST.TipoPrimitivo.FLOAT)
+
+def p_tipo_bool(t):
+    ''' tipo : TBOOL ''' 
+    t[0] = AST.Tipo(AST.TipoPrimitivo.BOOL)
+
+def p_tipo_char(t):
+    ''' tipo : TCHAR ''' 
+    t[0] = AST.Tipo(AST.TipoPrimitivo.CHAR)
+
+def p_tipo_string(t):
+    ''' tipo : TSTRING ''' 
+    t[0] = AST.Tipo(AST.TipoPrimitivo.STRING)
 
 def p_instruccion_imprimirln(t):
     '''imprimirln : IMPRIMIRLN PARIZQ lista_e PARDER PUNTOCOMA '''
@@ -484,6 +547,10 @@ def p_expresion_string(t):
 def p_expresion_string_2(t):
     '''e : DOLAR'''
     t[0] = AST.String(t[1], t.lineno(1), 0)    
+
+def p_expresion_variable(t):
+    '''e : ID'''
+    t[0] = AST.Variable(t[t1], t.lineno(1), 0 )
 
 
 def p_error(t):         
