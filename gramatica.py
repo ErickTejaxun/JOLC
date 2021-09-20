@@ -144,11 +144,15 @@ def t_INITIAL_TSTRING(t):
 
 def t_INITIAL_IMPRIMIRLN(t):
     r'println'
+    global final_cadena 
+    final_cadena = False    
     t.lexer.begin('impresion')
     return t    
 
 def t_INITIAL_IMPRIMIR(t):
     r'print'
+    global final_cadena 
+    final_cadena = False
     t.lexer.begin('impresion')
     return t
 
@@ -179,9 +183,10 @@ def t_INITIAL_STRING(t):
 def t_impresion_STRING(t):
     r'\"'
     global string_cadena_impresion
-    global final_cadena 
+    global final_cadena     
     if final_cadena == False:
-        string_cadena_impresion  = ''
+        string_cadena_impresion  = ''        
+        final_cadena = True          
         t.lexer.begin('cadena') 
         pass
     else:
@@ -198,7 +203,7 @@ def t_cadena_STRING(t):
         t.lexer.begin('INITIAL')
         final_cadena = False
         return t
-    t.value = string_cadena_impresion
+    t.value = string_cadena_impresion    
     t.lexer.begin('impresion')
     pass
 
@@ -206,7 +211,7 @@ def t_cadena_DOLAR(t):
     r'\$'  
     global final_cadena 
     global string_cadena_impresion
-    final_cadena = True        
+    #final_cadena = True        
     t.value = string_cadena_impresion
     t.lexer.begin('expresion')        
     string_cadena_impresion  = '' 

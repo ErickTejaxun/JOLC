@@ -109,3 +109,8 @@ println("Total : $(4*2+232*3). Fin Factura $(3*3)", " Hola mundo"^3);
 a = 4*3;
 b = 30-3 :: Int64;
 println("a*b = $(a*b)");
+
+a = 4*3;
+b = 30-3 :: Int64;
+c = 3.33 :: Int64;
+println("a*b = $(a*b) c= $(c)");
