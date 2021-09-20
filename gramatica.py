@@ -8,6 +8,7 @@ columa = 0
 input_ANY_init = ''
 string_cadena_impresion = '' 
 bandera_estado_cadena = 0
+final_cadena = False
 
 #Estados 
 states = (
@@ -134,19 +135,37 @@ def t_INITIAL_STRING(t):
 def t_impresion_STRING(t):
     r'\"'
     global string_cadena_impresion
-    string_cadena_impresion  = ''
-    t.lexer.begin('cadena') 
+    global final_cadena 
+    if final_cadena == False:
+        string_cadena_impresion  = ''
+        t.lexer.begin('cadena') 
+        pass
+    else:
+        t.value = string_cadena_impresion
+        t.lexer.begin('INITIAL')
+        final_cadena = False
+        return t        
 
 def t_cadena_STRING(t):
-    r'\"'    
+    r'\"'     
+    global final_cadena 
+    if final_cadena is True :
+        t.value = string_cadena_impresion
+        t.lexer.begin('INITIAL')
+        final_cadena = False
+        return t
     t.value = string_cadena_impresion
     t.lexer.begin('impresion')
-    return t
+    pass
 
 def t_cadena_DOLAR(t):
-    r'\$'   
+    r'\$'  
+    global final_cadena 
+    global string_cadena_impresion
+    final_cadena = True        
     t.value = string_cadena_impresion
-    t.lexer.begin('expresion')    
+    t.lexer.begin('expresion')        
+    string_cadena_impresion  = '' 
     return t     
 
 def t_cadena_COMILLA(t):
@@ -155,6 +174,7 @@ def t_cadena_COMILLA(t):
         t.lexer.lineno += 1            
     global string_cadena_impresion
     string_cadena_impresion = string_cadena_impresion + str(t.value)    
+    pass
 
 contador_parentesis = 0
 def t_expresion_PARIZQ(t):
@@ -164,11 +184,11 @@ def t_expresion_PARIZQ(t):
     return t
 
 def t_expresion_PARDER(t):
-    r'\('
+    r'\)'
     global contador_parentesis
     contador_parentesis -= 1
     if contador_parentesis == 0:
-        t.lexer.begin('impresion')
+        t.lexer.begin('cadena')
     return t
 
 
@@ -224,7 +244,6 @@ def find_column(token):
 # Building scanner.
 import ply.lex as lex
 lexer = lex.lex()
-
 import AST as AST
 
 
@@ -296,6 +315,11 @@ def p_lista_expresion(t):
     ''' lista_e : lista_e COMA e '''
     t[0] = t[1]
     t[0].append(t[3])
+
+def p_lista_expresion_2(t):
+    ''' lista_e : lista_e e '''
+    t[0] = t[1]
+    t[0].append(t[2])
 
 def p_lista_expresion_base(t):
     ''' lista_e : e '''
@@ -457,10 +481,16 @@ def p_expresion_string(t):
     '''e : STRING'''
     t[0] = AST.String(t[1], t.lineno(1), 0)
 
+def p_expresion_string_2(t):
+    '''e : DOLAR'''
+    t[0] = AST.String(t[1], t.lineno(1), 0)    
 
-def p_error(t):     
-    #print("Error sintáctico en "+str(t)+" linea: ") t.value t.type    
-    global_utils.registrySyntaxError(t.value,'Error de sintaxis. No se esperaba ' + t.type, t.lineno , find_column(t)) 
+
+def p_error(t):         
+    if t is not None:
+        global_utils.registrySyntaxError(t.value,'Error de sintaxis. No se esperaba ' + t.type, t.lineno , find_column(t)) 
+    else:
+        print ('Error sintactico ' + str(t))
 
 import ply.yacc as yacc
 parser = yacc.yacc()
@@ -468,8 +498,11 @@ parser = yacc.yacc()
 def parse(input):
     global input_ANY_init
     global linea
-    global columna
+    global columna    
+    global final_cadena
+    final_cadena = False
     input_ANY_init = input
     linea = 0 
     columa = 0
+    
     return parser.parse(input,tracking=True)

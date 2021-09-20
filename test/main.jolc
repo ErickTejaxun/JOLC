@@ -101,3 +101,6 @@ println("Hola");
 
 #JOLC Compiladores 2 USAC 2021
 println("Hola mundo 3444 $(232)");
+
+#JOLC Compiladores 2 USAC 2021
+println("Total : $(4*2). Fin Factura");
