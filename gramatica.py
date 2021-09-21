@@ -138,6 +138,11 @@ def t_INITIAL_impresion_expresion_OR(t):
     print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
     return t      
 
+def t_INITIAL_impresion_expresion_DIFDE(t):
+    r'!='
+    print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
+    return t
+
 def t_INITIAL_impresion_expresion_NOT(t):
     r'!'
     print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
@@ -153,10 +158,7 @@ def t_INITIAL_impresion_expresion_IGUAL(t):
     print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
     return t
 
-def t_INITIAL_impresion_expresion_DIFDE(t):
-    r'!='
-    print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
-    return t
+
 
 def t_INITIAL_impresion_expresion_MENIG(t):
     r'<='
