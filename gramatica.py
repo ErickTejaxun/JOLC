@@ -74,7 +74,9 @@ tokens = (
     'TBOOL',
     'TCHAR',
     'TSTRING',
-    'CARACTER'
+    'CARACTER',
+    'IF',
+    'END'
 
 )
 
@@ -105,24 +107,76 @@ def t_INITIAL_cadena_PARDER(t):
     r'\)'
     global contador_parentesis 
     contador_parentesis -= 1
-    print('Parentesis ' + str(contador_parentesis) + '\tEstado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
-    print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
+    print('Parentesis ' + str(contador_parentesis) + '\tEstado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))    
     return t
 
 
-t_INITIAL_impresion_expresion_MAS = r'\+'
-t_INITIAL_impresion_expresion_MENOS = r'-'
-t_INITIAL_impresion_expresion_DIV = r'/'
-t_INITIAL_impresion_expresion_AND = r'&&'
-t_INITIAL_impresion_expresion_OR = r'\|\|'
-t_INITIAL_impresion_expresion_NOT = r'!'
-t_INITIAL_impresion_expresion_IGUAL = r'='
-t_INITIAL_impresion_expresion_IGIG = r'=='
-t_INITIAL_impresion_expresion_DIFDE = r'!='
-t_INITIAL_impresion_expresion_MENIG = r'<='
-t_INITIAL_impresion_expresion_MAYIG = r'>='
-t_INITIAL_impresion_expresion_MAY = r'>'
-t_INITIAL_impresion_expresion_MEN = r'<'
+def t_INITIAL_impresion_expresion_MAS(t):
+    r'\+'
+    print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
+    return t      
+
+def t_INITIAL_impresion_expresion_MENOS(t):
+    r'-'
+    print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
+    return t      
+
+
+def t_INITIAL_impresion_expresion_DIV(t):
+    r'/'
+    print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
+    return t      
+
+def t_INITIAL_impresion_expresion_AND(t) :
+    r'&&'
+    print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
+    return t      
+
+
+def t_INITIAL_impresion_expresion_OR(t):
+    r'\|\|'
+    print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
+    return t      
+
+def t_INITIAL_impresion_expresion_NOT(t):
+    r'!'
+    print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
+    return t  
+
+def t_INITIAL_impresion_expresion_IGIG(t):
+    r'=='
+    print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
+    return t    
+
+def t_INITIAL_impresion_expresion_IGUAL(t):
+    r'='
+    print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
+    return t
+
+def t_INITIAL_impresion_expresion_DIFDE(t):
+    r'!='
+    print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
+    return t
+
+def t_INITIAL_impresion_expresion_MENIG(t):
+    r'<='
+    print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
+    return t    
+
+def t_INITIAL_impresion_expresion_MAYIG(t):
+    r'>='
+    print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
+    return t    
+def t_INITIAL_impresion_expresion_MAY(t):
+    r'>'
+    print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
+    return t
+
+def t_INITIAL_impresion_expresion_MEN(t):
+    r'<'
+    print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
+    return t
+
 t_INITIAL_impresion_expresion_POW = r'\^'
 t_INITIAL_impresion_expresion_MODULO = r'%'
 t_INITIAL_impresion_expresion_DPUNTOS = r'::'
@@ -131,6 +185,16 @@ t_INITIAL_impresion_expresion_DPUNTOS = r'::'
 
 # ignored characters, tab and space
 t_INITIAL_impresion_ignore = " \t"
+
+def t_INITIAL_impresion_expresion_IF(t):
+    r'if'
+    print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
+    return t 
+
+def t_INITIAL_impresion_expresion_END(t):
+    r'end'
+    print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
+    return t     
 
 def t_INITIAL_impresion_expresion_POR(t):
     r'\*'
@@ -439,7 +503,6 @@ precedence = (
     ('left','DOLAR'),
     ('left','MAS','MENOS'),
     ('left','POR','DIV'),    
-    
     ('right', 'UMINUS'),
     ('left','PARIZQ', 'PARDER'),    
     )
@@ -471,6 +534,12 @@ def p_lista_instrucciones_3(t):
     t[1].agregarInstruccion(t[2])
     t[0] = t[1]
 
+def p_lista_instrucciones_4(t):
+    '''lista_instrucciones : lista_instrucciones if'''
+    t[1].agregarInstruccion(t[2])
+    t[0] = t[1]
+
+
 def p_lista_instrucciones_imprimir(t):
     '''lista_instrucciones : imprimir'''
     t[0] = AST.Bloque(t.lineno(1), 0)
@@ -486,6 +555,11 @@ def p_lista_instrucciones_declaracion(t):
     t[0] = AST.Bloque(t.lineno(1), 0)
     t[0].agregarInstruccion(t[1])
 
+def p_lista_instrucciones_if(t):
+    '''lista_instrucciones : if'''
+    t[0] = AST.Bloque(t.lineno(1), 0)
+    t[0].agregarInstruccion(t[1])    
+
 def p_instruccion_declaracion(t):
     ''' declaracion : ID IGUAL e DPUNTOS tipo PUNTOCOMA'''
     t[0] = AST.Declaracion(t[1], t[3], t[5], t.lineno(1), 0)
@@ -493,6 +567,10 @@ def p_instruccion_declaracion(t):
 def p_instruccion_declaracion_sintipo(t):
     ''' declaracion : ID IGUAL e PUNTOCOMA'''
     t[0] = AST.Declaracion(t[1], t[3], None, t.lineno(1), 0)    
+
+def p_instruccion_if(t):
+    ''' if : IF e lista_instrucciones END PUNTOCOMA'''
+    t[0] = AST.If(t[2],t[3], t.lineno(1), 0)
 
 def p_tipo_int64(t):
     ''' tipo : TINT64'''
@@ -659,6 +737,10 @@ def p_expresion_igual_igual(t):
     '''e : e IGIG e'''
     t[0] = AST.Igualigual(t[1], t[3], t.lineno(1), 0)    
 
+def p_expresion_diferente(t):
+    '''e : e DIFDE e'''
+    t[0] = AST.Diferente(t[1], t[3], t.lineno(1), 0)    
+
 def p_expresion_or(t):
     '''e : e OR e'''
     t[0] =  AST.Or(t[1], t[3], t.lineno(1),0)
@@ -726,7 +808,7 @@ parser = yacc.yacc()
 def parse(input):
     global input_ANY_init
     global linea
-    global columna    
+    #global columna    
     global final_cadena
     final_cadena = False
     input_ANY_init = input

@@ -256,9 +256,25 @@ class Declaracion(Instruccion):
                 nuevo_simbolo = Simbolo(self.id, tipo_tmp, valor, self.linea, self.columna)            
                 entorno.tabla.registrarSimbolo(nuevo_simbolo)        
 
+class If(Instruccion):
+    def __init__(self, expresion, bloque, linea, columna):
+        self.expresion = expresion
+        self.bloque = bloque 
+        self.linea = linea 
+        self.columna = columna
 
-
-
+    def ejecutar(self, entorno):
+        tipo_tmp = self.expresion.getTipo(entorno)
+        if tipo_tmp is None:
+            global_utils.registrySemanticError('if', 'Valor inválido de la expresión condicional.', self.linea, self.columna) 
+            return
+        if tipo_tmp.esError():
+            global_utils.registrySemanticError('if', 'Valor inválido de la expresión condicional.', self.linea, self.columna)             
+            #global_utils.registrySemanticError('if', 'Tipo expresión condicional inválido. ' + tipo_tmp.getNombre() , self.linea, self.columna) 
+            return 
+        valor_condicion = self.expresion.getValor(entorno)
+        if valor_condicion:
+            self.bloque.ejecutar(entorno)
 
 ## Expresion -----------------------------------------------------
 
@@ -1021,7 +1037,40 @@ class Igualigual(Expresion):
             return self.valor
         if tipo_tmp.esCadena():
             self.valor = str(valorI) == str(valorD)
-            return self.valor  
+            return self.valor 
+        return False 
+
+
+class Diferente(Expresion):
+    def __init__(self, expresionI, expresionD, linea, columna):
+        self.expresionI = expresionI
+        self.expresionD = expresionD
+        self.linea = linea
+        self.columna = columna
+    
+    def getTipo(self, entorno):
+        tipoI = self.expresionI.getTipo(entorno)
+        tipoD = self.expresionI.getTipo(entorno)
+        if tipoI.esNumerico() and tipoD.esNumerico():
+            return tipoI
+        if tipoI.esCadena() and tipoD.esCadena():
+            return tipoI
+        global_utils.registrySemanticError('!=','No es posible realizar la operación ' + tipoI.getNombre() + ' != '+ tipoD.getNombre() , self.linea, self.columna)
+        return Tipo(TipoPrimitivo.ERROR)
+
+    def getValor(self, entorno):
+        tipo_tmp = self.getTipo(entorno)
+        if tipo_tmp.esError():
+            return None
+        valorI = self.expresionI.getValor(entorno)
+        valorD = self.expresionD.getValor(entorno)
+        if tipo_tmp.esNumerico():        
+            self.valor = valorI != valorD
+            return self.valor
+        if tipo_tmp.esCadena():
+            self.valor = str(valorI) != str(valorD)
+            return self.valor 
+        return False            
 
 class Or(Expresion):
     def __init__(self, expresionI, expresionD, linea, columna):
