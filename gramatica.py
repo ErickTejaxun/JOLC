@@ -80,7 +80,9 @@ tokens = (
     'ELSEIF',
     'WHILE',
     'FOR',
+    'IN',
     'BREAK',
+    'CONTINUE',
     'END'
 
 )
@@ -163,8 +165,6 @@ def t_INITIAL_impresion_expresion_IGUAL(t):
     print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
     return t
 
-
-
 def t_INITIAL_impresion_expresion_MENIG(t):
     r'<='
     print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
@@ -191,6 +191,11 @@ t_INITIAL_impresion_expresion_DPUNTOS = r'::'
 # ignored characters, tab and space
 t_INITIAL_impresion_ignore = " \t"
 
+def t_INITIAL_impresion_expresion_CONTINUE(t):
+    r'continue'
+    print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
+    return t 
+
 def t_INITIAL_impresion_expresion_BREAK(t):
     r'break'
     print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
@@ -200,6 +205,12 @@ def t_INITIAL_impresion_expresion_FOR(t):
     r'for'
     print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
     return t 
+
+def t_INITIAL_impresion_expresion_IN(t):
+    r'in'
+    print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
+    return t 
+
 
 def t_INITIAL_impresion_expresion_WHILE(t):
     r'while'
@@ -559,6 +570,16 @@ def p_lista_instrucciones_6(t):
     t[0] = t[1]
 
 def p_lista_instrucciones_7(t):
+    '''lista_instrucciones : lista_instrucciones continue'''
+    t[1].agregarInstruccion(t[2])
+    t[0] = t[1]   
+
+def p_lista_instrucciones_8(t):
+    '''lista_instrucciones : lista_instrucciones for'''
+    t[1].agregarInstruccion(t[2])
+    t[0] = t[1]    
+
+def p_lista_instrucciones_9(t):
     '''lista_instrucciones : lista_instrucciones error'''    
     t[0] = t[1]
 
@@ -588,10 +609,20 @@ def p_lista_instrucciones_while(t):
     t[0] = AST.Bloque(t.lineno(1), 0)
     t[0].agregarInstruccion(t[1]) 
 
+def p_lista_instrucciones_for(t):
+    '''lista_instrucciones : for'''
+    t[0] = AST.Bloque(t.lineno(1), 0)
+    t[0].agregarInstruccion(t[1])
+
 def p_lista_instrucciones_break(t):
     '''lista_instrucciones : break'''
     t[0] = AST.Bloque(t.lineno(1), 0)
-    t[0].agregarInstruccion(t[1])     
+    t[0].agregarInstruccion(t[1])  
+
+def p_lista_instrucciones_continue(t):
+    '''lista_instrucciones : continue'''
+    t[0] = AST.Bloque(t.lineno(1), 0)
+    t[0].agregarInstruccion(t[1])       
 
 def p_lista_instrucciones_error(t):
     '''lista_instrucciones : error'''
@@ -629,9 +660,17 @@ def p_instruccion_while(t):
     ''' while : WHILE e lista_instrucciones END PUNTOCOMA'''
     t[0] = AST.While(t[2], t[3], t.lineno(1),0)
 
+def p_instruccion_for(t):
+    ''' for : FOR ID IN e lista_instrucciones END PUNTOCOMA'''
+    t[0] = AST.For(t[2], t[4], t[5], t.lineno(1), 0)
+
 def p_instruccion_BREAK(t):
     '''break : BREAK PUNTOCOMA'''
     t[0] = AST.Break(t.lineno(1),0)
+
+def p_instruccion_CONTINUE(t):
+    '''continue : CONTINUE PUNTOCOMA'''
+    t[0] = AST.Continue(t.lineno(1),0)    
 
 def p_tipo_int64(t):
     ''' tipo : TINT64'''

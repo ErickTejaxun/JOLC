@@ -5,6 +5,7 @@ import json
 from json import JSONEncoder
 import AST as AST
 
+
 app = Flask(__name__)
 
 @app.route("/")# de esta forma le indicamos la ruta para acceder a esta pagina. 'Decoramos' la funcion. 
@@ -21,9 +22,9 @@ def analyze():
             entornoGlobal  = AST.Entorno(None)
             raiz.ejecutar(entornoGlobal) 
             if len(global_utils._errors)>0:
-                return jsonify(output=entornoGlobal.tabla.consola, errores=True)
+                return jsonify(output=AST.consola, errores=True)
             else:
-                return jsonify(output=entornoGlobal.tabla.consola, errores=False)
+                return jsonify(output=AST.consola, errores=False)
         else:        
             salida = []
             salida.append('')

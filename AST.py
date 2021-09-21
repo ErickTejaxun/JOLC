@@ -11,6 +11,9 @@ from json import JSONEncoder
 from singlenton import global_utils
 import math
 
+consola = []
+
+
 ### Tabla de símbolo
 class TipoPrimitivo(Enum):
     NULO = 1
@@ -113,15 +116,17 @@ class TablaSimbolo():
         entornoActual = self
         return self.tabla.get(id)
     
-    def imprimirln(self, valor):
-        self.consola.append(str(valor))
+    def imprimirln(self, valor):        
+        global consola
+        consola.append(str(valor))
 
     def imprimir(self, valor):
-        if len(self.consola) > 0:
-            texto = self.consola[len(self.consola)-1]        
-            self.consola[len(self.consola)-1] = texto+str(valor)
+        global consola
+        if len(consola) > 0:
+            texto = consola[len(consola)-1]        
+            consola[len(consola)-1] = texto+str(valor)
         else: 
-            self.consola.append(str(valor))
+            consola.append(str(valor))
 
     def toJSON(self):
         return json.dumps(self, default=lambda o: o.__dict__, 
@@ -186,11 +191,15 @@ class Bloque(Instruccion):
     def ejecutar(self, entorno):
         for inst in self.instrucciones:
             if isinstance(inst, Break):
-                return inst;
+                return inst
+            elif isinstance(inst, Continue):
+                return inst
             else:
                 val = inst.ejecutar(entorno)
                 if val is not None:
                     if isinstance(val, Break):
+                        return val
+                    if isinstance(val, Continue):
                         return val
 
 class Imprimir(Instruccion):
@@ -285,12 +294,16 @@ class If(Instruccion):
             if val is not None:
                 if isinstance(val, Break):
                     return val
+                if isinstance(val, Continue):
+                    return val                    
         else:
             if self.sino != None:
                 val  = self.sino.ejecutar(entorno)
                 if val is not None:
                     if isinstance(val, Break):
-                        return val                
+                        return val           
+                    if isinstance(val, Continue):
+                        return val                                            
 
 class While(Instruccion):
     def __init__(self, expresion, bloque, linea, columna):
@@ -314,7 +327,40 @@ class While(Instruccion):
             if val is not None:
                 if isinstance(val, Break):
                     return 
+                if isinstance(val, Continue):
+                    valor_condicion = self.expresion.getValor(entorno)
+                    continue
             valor_condicion = self.expresion.getValor(entorno)
+
+class For(Instruccion):
+    def __init__(self, id, expresion, bloque, linea, columna ):
+        self.id = id
+        self.expresion = expresion
+        self.linea = linea
+        self.columna = columna
+        self.bloque = bloque
+    
+    def ejecutar(self, entorno):
+        tipo_tmp = self.expresion.getTipo(entorno)
+        if tipo_tmp is not None:
+            if tipo_tmp.esCadena():
+               valor = self.expresion.getValor(entorno) 
+               entornoLocal = Entorno(None)
+               #Creamos la variable temporal
+               variable = Simbolo(self.id, Tipo(TipoPrimitivo.STRING),'',self.linea, self.columna)
+               entornoLocal.insertSimbolo(variable)
+               for i in valor:
+                    variable.valor = i
+                    resultado_ejecucion = self.bloque.ejecutar(entornoLocal)
+                    if resultado_ejecucion is not None:
+                        if isinstance(resultado_ejecucion, Break):
+                            return resultado_ejecucion
+                        if isinstance(resultado_ejecucion, Continue):
+                            return resultado_ejecucion
+                
+
+
+
 
 class Break(Instruccion):
     def __init__(self, linea, columna):
@@ -324,6 +370,13 @@ class Break(Instruccion):
     def ejecutar(self, entorno):
         return self
 
+class Continue(Instruccion):
+    def __init__(self, linea, columna):
+        self.linea = linea;
+        self.columna = columna;
+    
+    def ejecutar(self, entorno):
+        return self
 
 ## Expresion -----------------------------------------------------
 
