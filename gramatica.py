@@ -530,6 +530,9 @@ def p_lista_instrucciones_4(t):
     t[1].agregarInstruccion(t[2])
     t[0] = t[1]
 
+def p_lista_instrucciones_4(t):
+    '''lista_instrucciones : lista_instrucciones error'''    
+    t[0] = t[1]
 
 
 def p_lista_instrucciones_imprimir(t):
@@ -551,6 +554,11 @@ def p_lista_instrucciones_if(t):
     '''lista_instrucciones : if'''
     t[0] = AST.Bloque(t.lineno(1), 0)
     t[0].agregarInstruccion(t[1])    
+
+
+def p_lista_instrucciones_if(t):
+    '''lista_instrucciones : error'''
+    t[0] = AST.Bloque(t.lineno(1), 0)    
 
 
 
