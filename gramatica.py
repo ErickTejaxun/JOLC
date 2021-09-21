@@ -78,6 +78,7 @@ tokens = (
     'IF',
     'ELSE',
     'ELSEIF',
+    'WHILE',
     'END'
 
 )
@@ -187,6 +188,11 @@ t_INITIAL_impresion_expresion_DPUNTOS = r'::'
 
 # ignored characters, tab and space
 t_INITIAL_impresion_ignore = " \t"
+
+def t_INITIAL_impresion_expresion_WHILE(t):
+    r'while'
+    print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
+    return t 
 
 def t_INITIAL_impresion_expresion_IF(t):
     r'if'
@@ -530,7 +536,12 @@ def p_lista_instrucciones_4(t):
     t[1].agregarInstruccion(t[2])
     t[0] = t[1]
 
-def p_lista_instrucciones_4(t):
+def p_lista_instrucciones_5(t):
+    '''lista_instrucciones : lista_instrucciones while'''
+    t[1].agregarInstruccion(t[2])
+    t[0] = t[1]
+
+def p_lista_instrucciones_6(t):
     '''lista_instrucciones : lista_instrucciones error'''    
     t[0] = t[1]
 
@@ -555,12 +566,14 @@ def p_lista_instrucciones_if(t):
     t[0] = AST.Bloque(t.lineno(1), 0)
     t[0].agregarInstruccion(t[1])    
 
+def p_lista_instrucciones_while(t):
+    '''lista_instrucciones : while'''
+    t[0] = AST.Bloque(t.lineno(1), 0)
+    t[0].agregarInstruccion(t[1]) 
 
-def p_lista_instrucciones_if(t):
+def p_lista_instrucciones_error(t):
     '''lista_instrucciones : error'''
     t[0] = AST.Bloque(t.lineno(1), 0)    
-
-
 
 def p_instruccion_declaracion(t):
     ''' declaracion : ID IGUAL e DPUNTOS tipo PUNTOCOMA'''
@@ -590,7 +603,9 @@ def p_instruccion_elseif_2(t):
     '''elseif : ELSEIF e lista_instrucciones END PUNTOCOMA'''
     t[0] = AST.If(t[2],t[3],None, t.lineno(1), 0)
 
-
+def p_instruccion_while(t):
+    ''' while : WHILE e lista_instrucciones END PUNTOCOMA'''
+    t[0] = AST.While(t[2], t[3], t.lineno(1),0)
 
 
 def p_tipo_int64(t):
