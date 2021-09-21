@@ -78,7 +78,6 @@ tokens = (
     'IF',
     'ELSE',
     'ELSEIF',
-    'WHILE',
     'END'
 
 )
@@ -186,8 +185,6 @@ t_INITIAL_impresion_expresion_POW = r'\^'
 t_INITIAL_impresion_expresion_MODULO = r'%'
 t_INITIAL_impresion_expresion_DPUNTOS = r'::'
 
-
-
 # ignored characters, tab and space
 t_INITIAL_impresion_ignore = " \t"
 
@@ -204,12 +201,7 @@ def t_INITIAL_impresion_expresion_ELSEIF(t):
 def t_INITIAL_impresion_expresion_ELSE(t):
     r'else'
     print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
-    return t   
-
-def t_INITIAL_impresion_expresion_WHILE(t):
-    r'while'
-    print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
-    return t        
+    return t      
 
 def t_INITIAL_impresion_expresion_END(t):
     r'end'
@@ -376,13 +368,6 @@ def t_ANY_FLOAT(t):
     print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
     return t
 
-'''
-    ('cadena', 'exclusive'),
-    ('impresion', 'exclusive'),
-    ('expresion', 'exclusive'),
-    ('expresionInicio','exclusive'),
-    ('parentesis', 'exclusive')
-'''
 def t_INITIAL_expresion_impresion_ENTERO(t):
     r'\d+'
     try:
@@ -394,10 +379,6 @@ def t_INITIAL_expresion_impresion_ENTERO(t):
     print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
     return t
 
-   
-
-
-
 # Inicio de una cadena
 def t_impresion_COMILLA(t):
     r'\"'
@@ -406,8 +387,6 @@ def t_impresion_COMILLA(t):
     string_cadena_impresion  = ''             
     t.lexer.begin('cadena') 
     pass     
-
-  
 
 def t_expresionInicio_DOLAR(t):
     r'\('
@@ -419,7 +398,6 @@ def t_expresionInicio_DOLAR(t):
     string_cadena_impresion  = ''    
     print('Parentesis ' + str(contador_parentesis) + '\tEstado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
     return t
-
 
 def t_expresion_PARIZQ(t):
     r'\('
@@ -444,16 +422,6 @@ def t_expresion_PARDER(t):
         t.lexer.begin('cadena')
         print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
         return t
-
-#def t_parentesis_DOLAR(t):
-#    r'\)'
-#    global contador_parentesis
-#    contador_parentesis -= 1    
-#    t.lexer.begin('cadena')
-#    print('Parentesis ' + str(contador_parentesis) + '\tEstado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
-#    return t
-
-
 
 # Fin de la cadena
 def t_cadena_COMILLA(t):
@@ -563,6 +531,7 @@ def p_lista_instrucciones_4(t):
     t[0] = t[1]
 
 
+
 def p_lista_instrucciones_imprimir(t):
     '''lista_instrucciones : imprimir'''
     t[0] = AST.Bloque(t.lineno(1), 0)
@@ -583,6 +552,8 @@ def p_lista_instrucciones_if(t):
     t[0] = AST.Bloque(t.lineno(1), 0)
     t[0].agregarInstruccion(t[1])    
 
+
+
 def p_instruccion_declaracion(t):
     ''' declaracion : ID IGUAL e DPUNTOS tipo PUNTOCOMA'''
     t[0] = AST.Declaracion(t[1], t[3], t[5], t.lineno(1), 0)
@@ -590,10 +561,6 @@ def p_instruccion_declaracion(t):
 def p_instruccion_declaracion_sintipo(t):
     ''' declaracion : ID IGUAL e PUNTOCOMA'''
     t[0] = AST.Declaracion(t[1], t[3], None, t.lineno(1), 0)    
-
-#def p_instruccion_declaracion_sintipo(t):
-#    ''' while : WHILE e lista_instrucciones END PUNTOCOMA'''
-#    t[0] = AST.While(t[2],t[3], t.lineno(1),0 )
 
 def p_instruccion_if_1(t):
     ''' if : IF e lista_instrucciones END PUNTOCOMA '''

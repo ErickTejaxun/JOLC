@@ -1044,6 +1044,8 @@ class Igualigual(Expresion):
     def getTipo(self, entorno):
         tipoI = self.expresionI.getTipo(entorno)
         tipoD = self.expresionI.getTipo(entorno)
+        if tipoI == None or tipoD == None:
+            return Tipo(TipoPrimitivo.ERROR)    
         if tipoI.esNumerico() and tipoD.esNumerico():
             return tipoI
         if tipoI.esCadena() and tipoD.esCadena():
