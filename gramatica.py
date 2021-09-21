@@ -78,6 +78,7 @@ tokens = (
     'IF',
     'ELSE',
     'ELSEIF',
+    'WHILE',
     'END'
 
 )
@@ -203,7 +204,12 @@ def t_INITIAL_impresion_expresion_ELSEIF(t):
 def t_INITIAL_impresion_expresion_ELSE(t):
     r'else'
     print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
-    return t      
+    return t   
+
+def t_INITIAL_impresion_expresion_WHILE(t):
+    r'while'
+    print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
+    return t        
 
 def t_INITIAL_impresion_expresion_END(t):
     r'end'
@@ -584,6 +590,10 @@ def p_instruccion_declaracion(t):
 def p_instruccion_declaracion_sintipo(t):
     ''' declaracion : ID IGUAL e PUNTOCOMA'''
     t[0] = AST.Declaracion(t[1], t[3], None, t.lineno(1), 0)    
+
+#def p_instruccion_declaracion_sintipo(t):
+#    ''' while : WHILE e lista_instrucciones END PUNTOCOMA'''
+#    t[0] = AST.While(t[2],t[3], t.lineno(1),0 )
 
 def p_instruccion_if_1(t):
     ''' if : IF e lista_instrucciones END PUNTOCOMA '''

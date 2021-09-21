@@ -280,6 +280,27 @@ class If(Instruccion):
             if self.sino != None:
                 self.sino.ejecutar(entorno)
 
+class While(Instruccion):
+    def __init__(self, expresion, bloque, linea, columna):
+        self.expresion = expresion
+        self.bloque = bloque         
+        self.linea = linea 
+        self.columna = columna        
+    
+    def ejecutar(self, entorno):
+        tipo_tmp = self.expresion.getTipo(entorno)
+        if tipo_tmp is None:
+            global_utils.registrySemanticError('while', 'Valor inválido de la expresión condicional.', self.linea, self.columna) 
+            return  
+        if tipo_tmp.esError():
+            global_utils.registrySemanticError('while', 'Valor inválido de la expresión condicional.', self.linea, self.columna)
+            return                   
+        valor_condicion = self.expresion.getValor(entorno)
+        while valor_condicion :
+            ## ¿Nuevo entorno?
+            self.bloque.ejecutar(entorno)
+            valor_condicion = self.expresion.getValor(entorno)
+
 ## Expresion -----------------------------------------------------
 
 class Suma(Expresion):
