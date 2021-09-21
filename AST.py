@@ -960,7 +960,37 @@ class MenorIgual(Expresion):
             return self.valor
         if tipo_tmp.esCadena():
             self.valor = valorI <= valorD
-            return self.valor                       
+            return self.valor   
+
+class Igualigual(Expresion):
+    def __init__(self, expresionI, expresionD, linea, columna):
+        self.expresionI = expresionI
+        self.expresionD = expresionD
+        self.linea = linea
+        self.columna = columna
+    
+    def getTipo(self, entorno):
+        tipoI = self.expresionI.getTipo(entorno)
+        tipoD = self.expresionI.getTipo(entorno)
+        if tipoI.esNumerico() and tipoD.esNumerico():
+            return tipoI
+        if tipoI.esCadena() and tipoD.esCadena():
+            return tipoI
+        global_utils.registrySemanticError('==','No es posible realizar la operación ' + tipoI.getNombre() + ' == '+ tipoD.getNombre() , self.linea, self.columna)
+        return Tipo(TipoPrimitivo.ERROR)
+
+    def getValor(self, entorno):
+        tipo_tmp = self.getTipo(entorno)
+        if tipo_tmp.esError():
+            return None
+        valorI = self.expresionI.getValor(entorno)
+        valorD = self.expresionD.getValor(entorno)
+        if tipo_tmp.esNumerico():        
+            self.valor = valorI == valorD
+            return self.valor
+        if tipo_tmp.esCadena():
+            self.valor = str(valorI) == str(valorD)
+            return self.valor  
 
 class Or(Expresion):
     def __init__(self, expresionI, expresionD, linea, columna):

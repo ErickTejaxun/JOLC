@@ -84,7 +84,10 @@ tokens = (
 #t_INITIAL_TBOOL = r'Bool'
 #t_INITIAL_TCHAR = r'Char'
 #t_INITIAL_TSTRING = r'String'
-t_ANY_PUNTOCOMA=r';'
+def t_ANY_PUNTOCOMA(t):
+    r';'
+    t.lexer.begin('INITIAL')
+    return t
 
 def t_ANY_COMA(t):
     r','
@@ -94,14 +97,15 @@ def t_ANY_COMA(t):
 def t_INITIAL_cadena_impresion_PARIZQ(t):
     r'\('
     global contador_parentesis 
-    contador_parentesis += 1    
-    print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
+    contador_parentesis += 1  
+    print('Parentesis ' + str(contador_parentesis) + '\tEstado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))      
     return t
 
 def t_INITIAL_cadena_PARDER(t):
     r'\)'
     global contador_parentesis 
     contador_parentesis -= 1
+    print('Parentesis ' + str(contador_parentesis) + '\tEstado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
     print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
     return t
 
@@ -122,13 +126,6 @@ t_ANY_MAY = r'>'
 t_ANY_MEN = r'<'
 t_ANY_POW = r'\^'
 t_ANY_MODULO = r'%'
-
-t_ANY_LOG = r'log'
-t_ANY_LOG10 = r'log10'
-t_ANY_SIN = r'sin'
-t_ANY_COS = r'cos'
-t_ANY_TAN = r'tan'
-t_ANY_SQRT= r'sqrt'
 t_INITIAL_DPUNTOS = r'::'
 
 
@@ -140,6 +137,36 @@ def t_ANY_POR(t):
     r'\*'
     print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
     return t    
+
+def t_impresion_expresion_expresionInicio_parentesis_LOG10(t):
+    r'log10'
+    print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
+    return t   
+
+def t_impresion_expresion_expresionInicio_parentesis_LOG(t):
+    r'log'
+    print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
+    return t   
+
+def t_impresion_expresion_expresionInicio_parentesis_SIN(t):
+    r'sin'
+    print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
+    return t    
+
+def t_impresion_expresion_expresionInicio_parentesis_COS(t):
+    r'cos'
+    print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
+    return t   
+
+def t_impresion_expresion_expresionInicio_parentesis_TAN(t):
+    r'tan'
+    print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
+    return t    
+
+def t_impresion_expresion_expresionInicio_parentesis_SQRT(t):
+    r'sqrt'
+    print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
+    return t  
 
 def t_impresion_expresion_expresionInicio_parentesis_UPPERCASE(t):
     r'uppercase'    
@@ -233,8 +260,9 @@ def t_impresion_PARDER(t):
     contador_parentesis -= 1       
     if contador_parentesis == 0:
         t.lexer.begin('INITIAL')
-        print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
+        print('Parentesis ' + str(contador_parentesis) + '\tEstado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
         return t 
+    print('Parentesis ' + str(contador_parentesis) + '\tEstado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
     print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
     return t     
     
@@ -265,7 +293,14 @@ def t_ANY_FLOAT(t):
     print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
     return t
 
-def t_ANY_ENTERO(t):
+'''
+    ('cadena', 'exclusive'),
+    ('impresion', 'exclusive'),
+    ('expresion', 'exclusive'),
+    ('expresionInicio','exclusive'),
+    ('parentesis', 'exclusive')
+'''
+def t_INITIAL_expresion_impresion_ENTERO(t):
     r'\d+'
     try:
         t.value = int(t.value)
@@ -291,6 +326,54 @@ def t_impresion_COMILLA(t):
     t.lexer.begin('cadena') 
     pass     
 
+  
+
+def t_expresionInicio_DOLAR(t):
+    r'\('
+    global string_cadena_impresion 
+    global contador_parentesis
+    contador_parentesis += 1  
+    #t.value = string_cadena_impresion
+    t.lexer.begin('expresion')
+    string_cadena_impresion  = ''    
+    print('Parentesis ' + str(contador_parentesis) + '\tEstado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
+    return t
+
+
+def t_expresion_PARIZQ(t):
+    r'\('
+    global contador_parentesis
+    contador_parentesis += 1
+    print('Parentesis ' + str(contador_parentesis) + '\tEstado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
+    return t
+
+def t_expresion_PARDER(t):
+    r'\)'
+    global contador_parentesis
+    contador_parentesis -= 1
+    print('Parentesis ' + str(contador_parentesis) + '\tEstado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
+    if contador_parentesis == 1:
+        t.type = 'DOLAR'
+        t.lexer.begin('cadena')        
+        print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
+        return t
+        #pass    
+    else:    
+        t.type = 'DOLAR'
+        t.lexer.begin('cadena')
+        print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
+        return t
+
+#def t_parentesis_DOLAR(t):
+#    r'\)'
+#    global contador_parentesis
+#    contador_parentesis -= 1    
+#    t.lexer.begin('cadena')
+#    print('Parentesis ' + str(contador_parentesis) + '\tEstado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
+#    return t
+
+
+
 # Fin de la cadena
 def t_cadena_COMILLA(t):
     r'\"'     
@@ -310,52 +393,8 @@ def t_cadena_STRING(t):
     t.value = string_cadena_impresion
     t.lexer.begin('expresionInicio')    
     print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
-    return t     
+    return t   
 
-def t_expresionInicio_DOLAR(t):
-    r'\('
-    global string_cadena_impresion 
-    global contador_parentesis
-    contador_parentesis = 0    
-    t.value = string_cadena_impresion
-    t.lexer.begin('expresion')
-    string_cadena_impresion  = ''    
-    return t
-
-
-def t_expresion_PARIZQ(t):
-    r'\('
-    global contador_parentesis
-    contador_parentesis += 1
-    print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
-    return t
-
-def t_expresion_PARDER(t):
-    r'\)'
-    global contador_parentesis
-    contador_parentesis -= 1
-    if contador_parentesis == 1:
-        t.lexer.begin('parentesis')
-        contador_parentesis -= 1
-        pass        
-    else:       
-        t.type = 'DOLAR'
-        t.lexer.begin('cadena')
-        print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
-        return t
-
-def t_parentesis_DOLAR(t):
-    r'\)'
-    global contador_parentesis
-    contador_parentesis -= 1    
-    t.lexer.begin('cadena')
-    print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
-    return t
-
-
-def t_ANY_error(t):        
-    global_utils.registryLexicalError(t.value[0],'Caracter ilegal.', t.lexer.lineno, find_column(t))
-    t.lexer.skip(1)
 
 def t_cadena_CARACTER(t):
     r'.'
@@ -365,7 +404,17 @@ def t_cadena_CARACTER(t):
     string_cadena_impresion = string_cadena_impresion + str(t.value)    
     pass
 
+def t_cadena_DOLAR(t):
+    r'\)'
+    global contador_parentesis
+    contador_parentesis -= 1    
+    t.lexer.begin('cadena')
+    print('Parentesis ' + str(contador_parentesis) + '\tEstado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
+    return t
 
+def t_ANY_error(t):        
+    global_utils.registryLexicalError(t.value[0],'Caracter ilegal.', t.lexer.lineno, find_column(t))
+    t.lexer.skip(1)
 
 def find_column(token):
     global input_ANY_init
@@ -377,6 +426,7 @@ def find_column(token):
 # Building scanner.
 import ply.lex as lex
 lexer = lex.lex()
+
 import AST as AST
 
 
@@ -606,6 +656,10 @@ def p_expresion_menor_igual(t):
     '''e : e MENIG e'''
     t[0] = AST.MenorIgual(t[1], t[3], t.lineno(1), 0)
 
+def p_expresion_igual_igual(t):
+    '''e : e IGIG e'''
+    t[0] = AST.Igualigual(t[1], t[3], t.lineno(1), 0)    
+
 def p_expresion_or(t):
     '''e : e OR e'''
     t[0] =  AST.Or(t[1], t[3], t.lineno(1),0)
@@ -678,6 +732,6 @@ def parse(input):
     final_cadena = False
     input_ANY_init = input
     linea = 0 
-    columa = 0
+    columa = 0    
     
     return parser.parse(input,tracking=True)
