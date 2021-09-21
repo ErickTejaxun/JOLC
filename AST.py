@@ -185,7 +185,13 @@ class Bloque(Instruccion):
     
     def ejecutar(self, entorno):
         for inst in self.instrucciones:
-            inst.ejecutar(entorno)
+            if isinstance(inst, Break):
+                return inst;
+            else:
+                val = inst.ejecutar(entorno)
+                if val is not None:
+                    if isinstance(val, Break):
+                        return val
 
 class Imprimir(Instruccion):
     def __init__(self, lista_expresiones, linea, columna):
@@ -275,10 +281,16 @@ class If(Instruccion):
             return 
         valor_condicion = self.expresion.getValor(entorno)
         if valor_condicion:
-            self.bloque.ejecutar(entorno)
+            val = self.bloque.ejecutar(entorno)
+            if val is not None:
+                if isinstance(val, Break):
+                    return val
         else:
             if self.sino != None:
-                self.sino.ejecutar(entorno)
+                val  = self.sino.ejecutar(entorno)
+                if val is not None:
+                    if isinstance(val, Break):
+                        return val                
 
 class While(Instruccion):
     def __init__(self, expresion, bloque, linea, columna):
@@ -297,9 +309,21 @@ class While(Instruccion):
             return                   
         valor_condicion = self.expresion.getValor(entorno)
         while valor_condicion :
-            ## ¿Nuevo entorno?
-            self.bloque.ejecutar(entorno)
+            ## ¿Nuevo entorno?            
+            val = self.bloque.ejecutar(entorno)
+            if val is not None:
+                if isinstance(val, Break):
+                    return 
             valor_condicion = self.expresion.getValor(entorno)
+
+class Break(Instruccion):
+    def __init__(self, linea, columna):
+        self.linea = linea;
+        self.columna = columna;
+    
+    def ejecutar(self, entorno):
+        return self
+
 
 ## Expresion -----------------------------------------------------
 
@@ -1165,5 +1189,7 @@ class Not(Expresion):
             return self.valor
         return None
 
+
+    
 
 

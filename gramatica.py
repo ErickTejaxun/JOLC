@@ -79,6 +79,8 @@ tokens = (
     'ELSE',
     'ELSEIF',
     'WHILE',
+    'FOR',
+    'BREAK',
     'END'
 
 )
@@ -188,6 +190,16 @@ t_INITIAL_impresion_expresion_DPUNTOS = r'::'
 
 # ignored characters, tab and space
 t_INITIAL_impresion_ignore = " \t"
+
+def t_INITIAL_impresion_expresion_BREAK(t):
+    r'break'
+    print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
+    return t 
+
+def t_INITIAL_impresion_expresion_FOR(t):
+    r'for'
+    print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
+    return t 
 
 def t_INITIAL_impresion_expresion_WHILE(t):
     r'while'
@@ -542,6 +554,11 @@ def p_lista_instrucciones_5(t):
     t[0] = t[1]
 
 def p_lista_instrucciones_6(t):
+    '''lista_instrucciones : lista_instrucciones break'''
+    t[1].agregarInstruccion(t[2])
+    t[0] = t[1]
+
+def p_lista_instrucciones_7(t):
     '''lista_instrucciones : lista_instrucciones error'''    
     t[0] = t[1]
 
@@ -570,6 +587,11 @@ def p_lista_instrucciones_while(t):
     '''lista_instrucciones : while'''
     t[0] = AST.Bloque(t.lineno(1), 0)
     t[0].agregarInstruccion(t[1]) 
+
+def p_lista_instrucciones_break(t):
+    '''lista_instrucciones : break'''
+    t[0] = AST.Bloque(t.lineno(1), 0)
+    t[0].agregarInstruccion(t[1])     
 
 def p_lista_instrucciones_error(t):
     '''lista_instrucciones : error'''
@@ -607,6 +629,9 @@ def p_instruccion_while(t):
     ''' while : WHILE e lista_instrucciones END PUNTOCOMA'''
     t[0] = AST.While(t[2], t[3], t.lineno(1),0)
 
+def p_instruccion_BREAK(t):
+    '''break : BREAK PUNTOCOMA'''
+    t[0] = AST.Break(t.lineno(1),0)
 
 def p_tipo_int64(t):
     ''' tipo : TINT64'''
