@@ -76,6 +76,8 @@ tokens = (
     'TSTRING',
     'CARACTER',
     'IF',
+    'ELSE',
+    'ELSEIF',
     'END'
 
 )
@@ -86,12 +88,12 @@ tokens = (
 #t_INITIAL_TBOOL = r'Bool'
 #t_INITIAL_TCHAR = r'Char'
 #t_INITIAL_TSTRING = r'String'
-def t_ANY_PUNTOCOMA(t):
+def t_INITIAL_impresion_expresion_PUNTOCOMA(t):
     r';'
     t.lexer.begin('INITIAL')
     return t
 
-def t_ANY_COMA(t):
+def t_INITIAL_impresion_expresion_COMA(t):
     r','
     print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
     return t    
@@ -192,6 +194,16 @@ def t_INITIAL_impresion_expresion_IF(t):
     r'if'
     print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
     return t 
+
+def t_INITIAL_impresion_expresion_ELSEIF(t):
+    r'elseif'
+    print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
+    return t 
+
+def t_INITIAL_impresion_expresion_ELSE(t):
+    r'else'
+    print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
+    return t      
 
 def t_INITIAL_impresion_expresion_END(t):
     r'end'
@@ -378,9 +390,7 @@ def t_INITIAL_expresion_impresion_ENTERO(t):
 
    
 
-def t_ANY_line(t):
-    r'\n+'
-    t.lexer.lineno += len(t.value)
+
 
 # Inicio de una cadena
 def t_impresion_COMILLA(t):
@@ -477,6 +487,10 @@ def t_cadena_DOLAR(t):
     print('Parentesis ' + str(contador_parentesis) + '\tEstado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
     return t
 
+def t_ANY_line(t):
+    r'\n+'
+    t.lexer.lineno += len(t.value)    
+
 def t_ANY_error(t):        
     global_utils.registryLexicalError(t.value[0],'Caracter ilegal.', t.lexer.lineno, find_column(t))
     t.lexer.skip(1)
@@ -506,7 +520,8 @@ precedence = (
     ('left','MAS','MENOS'),
     ('left','POR','DIV'),    
     ('right', 'UMINUS'),
-    ('left','PARIZQ', 'PARDER'),    
+    ('left','PARIZQ', 'PARDER'),  
+    ('nonassoc', 'SI_SIMPLE')  
     )
 
 def p_raiz(t):
@@ -570,9 +585,28 @@ def p_instruccion_declaracion_sintipo(t):
     ''' declaracion : ID IGUAL e PUNTOCOMA'''
     t[0] = AST.Declaracion(t[1], t[3], None, t.lineno(1), 0)    
 
-def p_instruccion_if(t):
-    ''' if : IF e lista_instrucciones END PUNTOCOMA'''
-    t[0] = AST.If(t[2],t[3], t.lineno(1), 0)
+def p_instruccion_if_1(t):
+    ''' if : IF e lista_instrucciones END PUNTOCOMA '''
+    t[0] = AST.If(t[2],t[3], None,  t.lineno(1), 0)
+
+def p_instruccion_if_2(t):
+    ''' if : IF e lista_instrucciones elseif %prec SI_SIMPLE'''
+    t[0] = AST.If(t[2],t[3], t[4], t.lineno(1), 0)
+
+def p_instruccion_elseif_3(t):
+    '''elseif : ELSE lista_instrucciones END PUNTOCOMA'''
+    t[0] = AST.If(AST.Bool(True,t.lineno(1),0), t[2], None, t.lineno(1), 0)
+
+def p_instruccion_elseif_1(t):
+    '''elseif : ELSEIF e lista_instrucciones elseif'''
+    t[0] = AST.If(t[2],t[3],t[4], t.lineno(1), 0)
+
+def p_instruccion_elseif_2(t):
+    '''elseif : ELSEIF e lista_instrucciones END PUNTOCOMA'''
+    t[0] = AST.If(t[2],t[3],None, t.lineno(1), 0)
+
+
+
 
 def p_tipo_int64(t):
     ''' tipo : TINT64'''

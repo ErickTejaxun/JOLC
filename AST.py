@@ -230,7 +230,7 @@ class Declaracion(Instruccion):
         if val_tmp is not None:
             # Asignacion porque el ID ya existe.
             nuevo_tipo = self.expresion.getTipo(entorno)
-            if nuevo_tipo.compararTipo(val_tmp.tipo):            
+            if nuevo_tipo.compararTipo(val_tmp.tipo):         
                 val_nuevo = self.expresion.getValor(entorno)
                 val_tmp.valor = val_nuevo
             else:
@@ -257,9 +257,10 @@ class Declaracion(Instruccion):
                 entorno.tabla.registrarSimbolo(nuevo_simbolo)        
 
 class If(Instruccion):
-    def __init__(self, expresion, bloque, linea, columna):
+    def __init__(self, expresion, bloque, sino, linea, columna):
         self.expresion = expresion
         self.bloque = bloque 
+        self.sino = sino
         self.linea = linea 
         self.columna = columna
 
@@ -275,6 +276,9 @@ class If(Instruccion):
         valor_condicion = self.expresion.getValor(entorno)
         if valor_condicion:
             self.bloque.ejecutar(entorno)
+        else:
+            if self.sino != None:
+                self.sino.ejecutar(entorno)
 
 ## Expresion -----------------------------------------------------
 
