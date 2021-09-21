@@ -272,6 +272,9 @@ class Suma(Expresion):
     def getTipo(self, entorno):
         tipoI = self.expresionI.getTipo(entorno)
         tipoD = self.expresionD.getTipo(entorno)
+        if tipoI== None or tipoD == None:
+            global_utils.registrySemanticError('+','Se ha recibido una variable no declarada.' , self.linea, self.columna)  
+            return Tipo(TipoPrimitivo.ERROR)         
 
         if(tipoI.esCadena() or tipoD.esCadena()):        
             global_utils.registrySemanticError('+',' No es posible realizar la operación ' + tipoI.getNombre() + " + " + tipoD.getNombre() , self.linea, self.columna)
@@ -310,6 +313,10 @@ class Concatenacion(Expresion):
     def getTipo(self, entorno):
         tipoI = self.expresionI.getTipo(entorno)
         tipoD = self.expresionD.getTipo(entorno)
+        
+        if tipoI == None or tipoD == None :
+            global_utils.registrySemanticError('Concatenación','Error al realizar la conctaneación, se ha recibido una variable no declarada.' , self.linea, self.columna)
+            return Tipo(TipoPrimitivo.ERROR)            
 
         if tipoI.esError() or tipoD.esError():
             return Tipo(TipoPrimitivo.ERROR)
@@ -334,6 +341,10 @@ class Resta(Expresion):
     def getTipo(self, entorno):
         tipoI = self.expresionI.getTipo(entorno)
         tipoD = self.expresionD.getTipo(entorno)
+
+        if tipoI== None or tipoD == None:
+            global_utils.registrySemanticError('-','Se ha recibido una variable no declarada.' , self.linea, self.columna)  
+            return Tipo(TipoPrimitivo.ERROR)         
 
         if (tipoI.esNumerico() and tipoD.esNumerico()):
             if (tipoI.esFloat() or tipoD.esFloat()):
@@ -374,6 +385,10 @@ class Multiplicacion(Expresion):
     def getTipo(self, entorno):
         tipoI = self.expresionI.getTipo(entorno)
         tipoD = self.expresionD.getTipo(entorno)
+
+        if tipoI== None or tipoD == None:
+            global_utils.registrySemanticError('*','Se ha recibido una variable no declarada.' , self.linea, self.columna)  
+            return Tipo(TipoPrimitivo.ERROR)            
 
         ## Si ambos son string se hace una concatenacion
         if(tipoI.esCadena() and tipoD.esCadena()):
@@ -422,6 +437,10 @@ class Division(Expresion):
         tipoI = self.expresionI.getTipo(entorno)
         tipoD = self.expresionD.getTipo(entorno)
 
+        if tipoI== None or tipoD == None:
+            global_utils.registrySemanticError('/','Se ha recibido una variable no declarada.' , self.linea, self.columna)  
+            return Tipo(TipoPrimitivo.ERROR)         
+
         if (tipoI.esNumerico() and tipoD.esNumerico()):
             return Tipo(TipoPrimitivo.FLOAT)
 
@@ -458,6 +477,10 @@ class Potencia(Expresion):
     def getTipo(self, entorno):
         tipoI = self.expresionI.getTipo(entorno)
         tipoD = self.expresionD.getTipo(entorno)
+
+        if tipoI== None or tipoD == None:
+            global_utils.registrySemanticError('^','Se ha recibido una variable no declarada.' , self.linea, self.columna)  
+            return Tipo(TipoPrimitivo.ERROR)         
 
         if (tipoI.esNumerico() and tipoD.esNumerico()):
             if(tipoI.esFloat() or tipoD.esFloat()):
@@ -512,6 +535,10 @@ class Modulo(Expresion):
         tipoI = self.expresionI.getTipo(entorno)
         tipoD = self.expresionD.getTipo(entorno)
 
+        if tipoI== None or tipoD == None:
+            global_utils.registrySemanticError('%','Se ha recibido una variable no declarada.' , self.linea, self.columna)  
+            return Tipo(TipoPrimitivo.ERROR) 
+
         if (tipoI.esNumerico() and tipoD.esNumerico()):
             if (tipoI.esFloat() or tipoD.esFloat()):
                 return Tipo(TipoPrimitivo.FLOAT)
@@ -546,7 +573,11 @@ class Negativo(Expresion):
         self.columna = columna
     
     def getTipo(self, entorno):
-        tipo = self.expresion.getTipo(entorno)        
+        tipo = self.expresion.getTipo(entorno)  
+
+        if tipo== None:
+            global_utils.registrySemanticError('-','Se ha recibido una variable no declarada.' , self.linea, self.columna)  
+            return Tipo(TipoPrimitivo.ERROR)                       
 
         if tipo.esNumerico():
             if tipo.esFloat():

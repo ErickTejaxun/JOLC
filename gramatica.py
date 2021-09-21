@@ -110,30 +110,29 @@ def t_INITIAL_cadena_PARDER(t):
     return t
 
 
-t_ANY_MAS = r'\+'
-t_ANY_MENOS = r'-'
-
-t_ANY_DIV = r'/'
-t_ANY_AND = r'&&'
-t_ANY_OR = r'\|\|'
-t_ANY_NOT = r'!'
-t_INITIAL_IGUAL = r'='
-t_ANY_IGIG = r'=='
-t_ANY_DIFDE = r'!='
-t_ANY_MENIG = r'<='
-t_ANY_MAYIG = r'>='
-t_ANY_MAY = r'>'
-t_ANY_MEN = r'<'
-t_ANY_POW = r'\^'
-t_ANY_MODULO = r'%'
-t_INITIAL_DPUNTOS = r'::'
+t_INITIAL_impresion_expresion_MAS = r'\+'
+t_INITIAL_impresion_expresion_MENOS = r'-'
+t_INITIAL_impresion_expresion_DIV = r'/'
+t_INITIAL_impresion_expresion_AND = r'&&'
+t_INITIAL_impresion_expresion_OR = r'\|\|'
+t_INITIAL_impresion_expresion_NOT = r'!'
+t_INITIAL_impresion_expresion_IGUAL = r'='
+t_INITIAL_impresion_expresion_IGIG = r'=='
+t_INITIAL_impresion_expresion_DIFDE = r'!='
+t_INITIAL_impresion_expresion_MENIG = r'<='
+t_INITIAL_impresion_expresion_MAYIG = r'>='
+t_INITIAL_impresion_expresion_MAY = r'>'
+t_INITIAL_impresion_expresion_MEN = r'<'
+t_INITIAL_impresion_expresion_POW = r'\^'
+t_INITIAL_impresion_expresion_MODULO = r'%'
+t_INITIAL_impresion_expresion_DPUNTOS = r'::'
 
 
 
 # ignored characters, tab and space
 t_INITIAL_impresion_ignore = " \t"
 
-def t_ANY_POR(t):
+def t_INITIAL_impresion_expresion_POR(t):
     r'\*'
     print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
     return t    

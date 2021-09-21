@@ -112,7 +112,7 @@ println("a*b = $(a*b)");
 
 a = 4*3;
 b = 30-3 :: Int64;
-c = 3.33 :: Int64;
+c = 3 :: Int64;
 println("a*b = $(a*b) c= $(c)");
 
 x = (3*5)::Int64; # Correcto
