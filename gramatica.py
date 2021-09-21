@@ -43,6 +43,7 @@ tokens = (
     'MENIG',
     'IGUAL',
     'DPUNTOS',
+    'DPUNTO',
     #-------PRIMITIVAS
     'NULO',
     'FLOAT',
@@ -187,6 +188,7 @@ def t_INITIAL_impresion_expresion_MEN(t):
 t_INITIAL_impresion_expresion_POW = r'\^'
 t_INITIAL_impresion_expresion_MODULO = r'%'
 t_INITIAL_impresion_expresion_DPUNTOS = r'::'
+t_INITIAL_impresion_expresion_DPUNTO = r':'
 
 # ignored characters, tab and space
 t_INITIAL_impresion_ignore = " \t"
@@ -660,10 +662,20 @@ def p_instruccion_while(t):
     ''' while : WHILE e lista_instrucciones END PUNTOCOMA'''
     t[0] = AST.While(t[2], t[3], t.lineno(1),0)
 
-def p_instruccion_for(t):
+## For
+def p_instruccion_for_1(t):
     ''' for : FOR ID IN e lista_instrucciones END PUNTOCOMA'''
     t[0] = AST.For(t[2], t[4], t[5], t.lineno(1), 0)
 
+def p_instruccion_for_2(t):
+    ''' for : FOR ID IN rango lista_instrucciones END PUNTOCOMA'''
+    t[0] = AST.For(t[2], t[4], t[5], t.lineno(1), 0)    
+
+def p_rango(t):
+    ''' rango : e DPUNTO e '''
+    t[0] = AST.Rango(t[1],t[3], t.lineno(1),0)
+
+## Fin For
 def p_instruccion_BREAK(t):
     '''break : BREAK PUNTOCOMA'''
     t[0] = AST.Break(t.lineno(1),0)

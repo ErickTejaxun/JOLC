@@ -341,22 +341,40 @@ class For(Instruccion):
         self.bloque = bloque
     
     def ejecutar(self, entorno):
-        tipo_tmp = self.expresion.getTipo(entorno)
-        if tipo_tmp is not None:
-            if tipo_tmp.esCadena():
-               valor = self.expresion.getValor(entorno) 
-               entornoLocal = Entorno(None)
-               #Creamos la variable temporal
-               variable = Simbolo(self.id, Tipo(TipoPrimitivo.STRING),'',self.linea, self.columna)
-               entornoLocal.insertSimbolo(variable)
-               for i in valor:
+        if isinstance(self.expresion, Rango):
+            tipo_tmp = self.expresion.getTipo(entorno)
+            if not tipo_tmp.esError():
+                rango = self.expresion.getValor(entorno)                
+                entornoLocal = Entorno(None)
+                #Creamos la variable temporal
+                variable = Simbolo(self.id, Tipo(TipoPrimitivo.ENTERO),'',self.linea, self.columna)
+                entornoLocal.insertSimbolo(variable)                
+                for i in rango:
                     variable.valor = i
                     resultado_ejecucion = self.bloque.ejecutar(entornoLocal)
                     if resultado_ejecucion is not None:
                         if isinstance(resultado_ejecucion, Break):
                             return resultado_ejecucion
                         if isinstance(resultado_ejecucion, Continue):
-                            return resultado_ejecucion
+                            return resultado_ejecucion                    
+
+        else:
+            tipo_tmp = self.expresion.getTipo(entorno)
+            if tipo_tmp is not None:
+                if tipo_tmp.esCadena():
+                    valor = self.expresion.getValor(entorno) 
+                    entornoLocal = Entorno(None)
+                    #Creamos la variable temporal
+                    variable = Simbolo(self.id, Tipo(TipoPrimitivo.STRING),'',self.linea, self.columna)
+                    entornoLocal.insertSimbolo(variable)
+                    for i in valor:
+                            variable.valor = i
+                            resultado_ejecucion = self.bloque.ejecutar(entornoLocal)
+                            if resultado_ejecucion is not None:
+                                if isinstance(resultado_ejecucion, Break):
+                                    return resultado_ejecucion
+                                if isinstance(resultado_ejecucion, Continue):
+                                    return resultado_ejecucion
                 
 
 
@@ -1241,6 +1259,34 @@ class Not(Expresion):
             self.valor = not valor
             return self.valor
         return None
+
+class Rango(Expresion):
+    def __init__(self, expresionInicio, expresionFinal, linea, columna):
+        self.expresionInicio = expresionInicio
+        self.expresionFinal = expresionFinal
+        self.linea = linea
+        self.columna = columna
+    
+    def getTipo(self, entorno):
+        tipoI = self.expresionInicio.getTipo(entorno)
+        tipoD = self.expresionFinal.getTipo(entorno)
+
+        if (tipoI is None) or (tipoD is None):
+            global_utils.registrySemanticError('rango for','Variable no definida.' , self.linea, self.columna)
+            return Tipo(TipoPrimitivo.ERROR)
+
+        if tipoI.esNumerico() and tipoD.esNumerico():
+            return Tipo(TipoPrimitivo.ENTERO)
+        global_utils.registrySemanticError('rango for','Valor inválido para rangos en ciclo for' , self.linea, self.columna)
+        return Tipo(TipoPrimitivo.ERROR)
+    
+    def getValor(self, entorno):
+        tipo = self.getTipo(entorno)
+        if not tipo.esError():
+            valorI = self.expresionInicio.getValor(entorno)
+            valorD = self.expresionFinal.getValor(entorno)
+            return range(int(valorI), int(valorD)+1)
+
 
 
     
