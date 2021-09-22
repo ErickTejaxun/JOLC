@@ -1470,10 +1470,10 @@ class Ternario(Expresion):
 
     def getTipo(self, entorno):
         tipo_valor = self.condicion.getTipo(entorno)
-        if tipo_valor is not None:
+        if tipo_valor is None:
            global_utils.registrySemanticError('Ternario','Valor erroneo condición.' , self.linea, self.columna) 
            return Tipo(TipoPrimitivo.ERROR)
-        if not tipo_valor.esBooleano():
+        if not tipo_valor.esBool():
            global_utils.registrySemanticError('Ternario','Valor erroneo condición.' , self.linea, self.columna) 
            return Tipo(TipoPrimitivo.ERROR)        
         valor = self.condicion.getValor(entorno)
