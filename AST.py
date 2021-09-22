@@ -626,7 +626,10 @@ class Suma(Expresion):
         tipoD = self.expresionD.getTipo(entorno)
         if tipoI== None or tipoD == None:
             global_utils.registrySemanticError('+','Se ha recibido una variable no declarada.' , self.linea, self.columna)  
-            return Tipo(TipoPrimitivo.ERROR)         
+            return Tipo(TipoPrimitivo.ERROR) 
+
+        if tipoI.esDinamico() or tipoD.esDinamico():
+            return Tipo(TipoPrimitivo.DINAMICO)                      
 
         if(tipoI.esCadena() or tipoD.esCadena()):        
             global_utils.registrySemanticError('+',' No es posible realizar la operación ' + tipoI.getNombre() + " + " + tipoD.getNombre() , self.linea, self.columna)
@@ -641,15 +644,27 @@ class Suma(Expresion):
         if tipo_actual.esError():
             return None
 
+        valorI = self.expresionI.getValor(entorno)
+        valorD = self.expresionD.getValor(entorno)
+
+        if tipo_actual.esDinamico():
+            tipoI = entorno.obtenerTipo(valorI)
+            tipoD = entorno.obtenerTipo(valorD)
+
+            if tipoI.esFloat() or tipoD.esFloat():
+                self.valor = float(valorI) + float(valorD)
+                return self.valor             
+            if tipoI.esEntero() and tipoD.esEntero():
+                self.valor = int(valorI) + int(valorD)
+                return self.valor   
+            global_utils.registrySemanticError('+',' No es posible realizar la operación ' + tipoI.getNombre() + " - " + tipoD.getNombre(), self.linea, self.columna)                           
+            return None            
+
         if tipo_actual.esFloat():
-            valorI = self.expresionI.getValor(entorno)
-            valorD = self.expresionD.getValor(entorno)
             self.valor = float(valorI) + float(valorD)
             return self.valor
             
-        if tipo_actual.esEntero():            
-            valorI = self.expresionI.getValor(entorno)
-            valorD = self.expresionD.getValor(entorno)
+        if tipo_actual.esEntero():                        
             self.valor = int(valorI)+ int(valorD)
             return self.valor
         
@@ -668,7 +683,10 @@ class Concatenacion(Expresion):
         
         if tipoI == None or tipoD == None :
             global_utils.registrySemanticError('Concatenación','Error al realizar la conctaneación, se ha recibido una variable no declarada.' , self.linea, self.columna)
-            return Tipo(TipoPrimitivo.ERROR)            
+            return Tipo(TipoPrimitivo.ERROR)  
+
+        if tipoI.esDinamico() or tipoD.esDinamico():
+            return Tipo(TipoPrimitivo.STRING)                       
 
         if tipoI.esError() or tipoD.esError():
             return Tipo(TipoPrimitivo.ERROR)
@@ -676,9 +694,10 @@ class Concatenacion(Expresion):
     
     def getValor(self, entorno):
         cadena = ''
-        tipo_tmp = self.getTipo(entorno)
+        tipo_tmp = self.getTipo(entorno)        
         if tipo_tmp.esError():
             return None
+                
         valorI = self.expresionI.getValor(entorno)
         valorD = self.expresionD.getValor(entorno)                 
         cadena = self.recorrer(valorI, cadena)
@@ -714,7 +733,10 @@ class Resta(Expresion):
 
         if tipoI== None or tipoD == None:
             global_utils.registrySemanticError('-','Se ha recibido una variable no declarada.' , self.linea, self.columna)  
-            return Tipo(TipoPrimitivo.ERROR)         
+            return Tipo(TipoPrimitivo.ERROR) 
+
+        if tipoI.esDinamico() or tipoD.esDinamico():
+            return Tipo(TipoPrimitivo.DINAMICO)                    
 
         if (tipoI.esNumerico() and tipoD.esNumerico()):
             if (tipoI.esFloat() or tipoD.esFloat()):
@@ -729,16 +751,28 @@ class Resta(Expresion):
 
         if tipo_actual.esError():
             return None
+
+        valorI = self.expresionI.getValor(entorno)
+        valorD = self.expresionD.getValor(entorno) 
+
+        if tipo_actual.esDinamico():
+            tipoI = entorno.obtenerTipo(valorI)
+            tipoD = entorno.obtenerTipo(valorD)
+
+            if tipoI.esFloat() or tipoD.esFloat():
+                self.valor = float(valorI) - float(valorD)
+                return self.valor             
+            if tipoI.esEntero() and tipoD.esEntero():
+                self.valor = int(valorI) - int(valorD)
+                return self.valor   
+            global_utils.registrySemanticError('-',' No es posible realizar la operación ' + tipoI.getNombre() + " - " + tipoD.getNombre(), self.linea, self.columna)                           
+            return None
             
-        if tipo_actual.esFloat():
-            valorI = self.expresionI.getValor(entorno)
-            valorD = self.expresionD.getValor(entorno)
+        if tipo_actual.esFloat():            
             self.valor = float(valorI) - float(valorD)
             return self.valor
             
-        if tipo_actual.esEntero():            
-            valorI = self.expresionI.getValor(entorno)
-            valorD = self.expresionD.getValor(entorno)
+        if tipo_actual.esEntero():                        
             self.valor = int(valorI) - int(valorD)
             return self.valor
         
@@ -794,7 +828,8 @@ class Multiplicacion(Expresion):
                 return self.valor                
             if tipoI.esEntero() and tipoD.esEntero():
                 self.valor = int(valorI) * int(valorD)
-                return self.valor                
+                return self.valor   
+            global_utils.registrySemanticError('*',' No es posible realizar la operación ' + tipoI.getNombre() + " * " + tipoD.getNombre() , self.linea, self.columna)                             
             return None
 
         if tipo_actual.esCadena():
@@ -854,7 +889,8 @@ class Division(Expresion):
 
             if tipoI.esEntero() and tipoD.esEntero():
                 self.valor = int(valorI) / int(valorD)
-                return self.valor                
+                return self.valor  
+            global_utils.registrySemanticError('/',' No es posible realizar la operación ' + tipoI.getNombre() + " / " + tipoD.getNombre() , self.linea, self.columna)                              
             return None            
             
         if tipo_actual.esFloat():
@@ -923,7 +959,7 @@ class Potencia(Expresion):
                     self.valor = self.valor + str(valorI)
                     contador = contador + 1
                 return self.valor                
-            
+            global_utils.registrySemanticError('^',' No es posible realizar la operación ' + tipoI.getNombre() + " ^ " + tipoD.getNombre() , self.linea, self.columna)
             return None        
             
         if tipo_actual.esFloat():
@@ -959,12 +995,15 @@ class Modulo(Expresion):
             global_utils.registrySemanticError('%','Se ha recibido una variable no declarada.' , self.linea, self.columna)  
             return Tipo(TipoPrimitivo.ERROR) 
 
+        if tipoI.esDinamico() or tipoD.esDinamico():
+            return Tipo(TipoPrimitivo.DINAMICO)               
+
         if (tipoI.esNumerico() and tipoD.esNumerico()):
             if (tipoI.esFloat() or tipoD.esFloat()):
                 return Tipo(TipoPrimitivo.FLOAT)
             return Tipo(TipoPrimitivo.ENTERO)
 
-        global_utils.registrySemanticError('-',' No es posible realizar la operación ' + tipo.getNombre() + " - " + tipo.getNombre() , self.linea, self.columna)
+        global_utils.registrySemanticError('%',' No es posible realizar la operación ' + tipoI.getNombre() + " % " + tipoD.getNombre() , self.linea, self.columna)
         return Tipo(TipoPrimitivo.ERROR)        
     
     def getValor(self, entorno):
@@ -975,6 +1014,21 @@ class Modulo(Expresion):
             
         valorI = self.expresionI.getValor(entorno)
         valorD = self.expresionD.getValor(entorno)
+
+
+        if tipo_actual.esDinamico():
+            tipoI = entorno.obtenerTipo(valorI)
+            tipoD = entorno.obtenerTipo(valorD)
+
+            if tipoI.esFloat() or tipoD.esFloat():
+                self.valor = float(valorI) % float(valorD)
+                return self.valor     
+
+            if tipoI.esEntero() and tipoD.esEntero():
+                self.valor = int(valorI) % int(valorD)
+                return self.valor  
+            global_utils.registrySemanticError('%',' No es posible realizar la operación ' + tipoI.getNombre() + " % " + tipoD.getNombre() , self.linea, self.columna)                                                                  
+            return None          
 
         if tipo_actual.esFloat():            
             self.valor = float(valorI) % float(valorD)
@@ -997,7 +1051,10 @@ class Negativo(Expresion):
 
         if tipo== None:
             global_utils.registrySemanticError('-','Se ha recibido una variable no declarada.' , self.linea, self.columna)  
-            return Tipo(TipoPrimitivo.ERROR)                       
+            return Tipo(TipoPrimitivo.ERROR)   
+            
+        if tipo.esDinamico():
+            return tipo               
 
         if tipo.esNumerico():
             if tipo.esFloat():
@@ -1012,6 +1069,19 @@ class Negativo(Expresion):
 
         if tipo_actual.esError():
             return None
+        
+        if tipo_actual.esDinamico():
+            valor = self.expresion.getValor(entorno)
+            tipo_real = entorno.obtenerTipo(valor)    
+            if tipo_real.esFloat():                        
+                self.valor = float(valor) * -1 
+                return self.valor
+                
+            if tipo_real.esEntero():                                            
+                self.valor = int(valor) * -1 
+                return self.valor   
+            global_utils.registrySemanticError('-',' No es posible realizar la operación (-) ' + tipo_real.getNombre() , self.linea, self.columna)
+            return None         
             
         valor = self.expresion.getValor(entorno)
         if tipo_actual.esFloat():                        
