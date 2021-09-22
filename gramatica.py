@@ -95,7 +95,7 @@ tokens = (
 
 
 def imprimirEstado(str):
-    print(str)
+    #print(str)
     pass
 
 #tipos primitivos

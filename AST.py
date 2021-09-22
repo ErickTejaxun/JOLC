@@ -199,7 +199,7 @@ class Entorno():
         while entornoActual is not None:
             tmpValor = entornoActual.tabla.getSimbolo(id)
             if tmpValor is None:
-                entornoActual = self.padre
+                entornoActual = entornoActual.padre
             else: 
                 return tmpValor
         return None        
@@ -284,6 +284,7 @@ class Bloque(Instruccion):
                             return val
                         if isinstance(val, Continue):
                             return val
+                        return val
                 elif isinstance(inst, Expresion):
                     val = inst.getValor(entorno)
                     if val is not None:
@@ -350,8 +351,7 @@ class ImprimirLn(Instruccion):
                 if tipo_tmp is not None:                
                     if tipo_tmp.esArreglo():                    
                         cadena = '[' + self.imprimirArreglo(exp, entorno, cadena) + ']'
-                    else:
-                        valor = exp.getValor(entorno)
+                    else:                        
                         if valor == None:
                             valor = 'nothing'
                         cadena = str(cadena) + str(valor)                
@@ -445,6 +445,7 @@ class If(Instruccion):
         self.columna = columna
 
     def ejecutar(self, entorno):
+        #print('Ejecutando IF')
         tipo_tmp = self.expresion.getTipo(entorno)
         if tipo_tmp is None:
             global_utils.registrySemanticError('if', 'Valor inválido de la expresión condicional.', self.linea, self.columna) 
@@ -460,7 +461,8 @@ class If(Instruccion):
                 if isinstance(val, Break):
                     return val
                 if isinstance(val, Continue):
-                    return val                    
+                    return val  
+                return val                  
         else:
             if self.sino != None:
                 val  = self.sino.ejecutar(entorno)
@@ -468,7 +470,8 @@ class If(Instruccion):
                     if isinstance(val, Break):
                         return val           
                     if isinstance(val, Continue):
-                        return val                                            
+                        return val  
+                    return val                                          
 
 class While(Instruccion):
     def __init__(self, expresion, bloque, linea, columna):
@@ -510,7 +513,7 @@ class For(Instruccion):
             tipo_tmp = self.expresion.getTipo(entorno)
             if not tipo_tmp.esError():
                 rango = self.expresion.getValor(entorno)                
-                entornoLocal = Entorno(None)
+                entornoLocal = Entorno(entorno)
                 #Creamos la variable temporal
                 variable = Simbolo(self.id, Tipo(TipoPrimitivo.ENTERO),'',self.linea, self.columna)
                 entornoLocal.insertSimbolo(variable)                
@@ -1734,7 +1737,7 @@ class Llamada(Expresion):
         return Tipo(TipoPrimitivo.DINAMICO)
     
     def getValor(self, entorno):
-        nuevoEntorno = Entorno(None)
+        nuevoEntorno = Entorno(entorno)
         #Creamos las nuevas variables. 
         nombre_funcion_buscada = self.id 
         if self.parametros is not None:

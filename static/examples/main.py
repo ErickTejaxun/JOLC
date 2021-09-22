@@ -6,9 +6,7 @@ from json import JSONEncoder
 import AST as AST
 
 
-
 app = Flask(__name__)
-
 
 @app.route("/")# de esta forma le indicamos la ruta para acceder a esta pagina. 'Decoramos' la funcion. 
 def home():
@@ -36,8 +34,11 @@ def analyze():
             else:
                 return jsonify(output=salida, errores= False)
     else:
-        codigo = ''
-        return render_template('analyze.html', initial=codigo)
+        f = open ('main.jolc','r')
+        mensaje = f.read()
+        print(mensaje)
+        f.close()        
+        return render_template('analyze.html', initial="#JOLC Compiladores 2 USAC 2021")
 
 @app.route("/reports", methods=["POST", "GET"])
 def reports():
