@@ -149,6 +149,9 @@ class TablaSimbolo():
                     global_utils.registrySemanticError('Declaracion', 'Ya se ha declarado previamente una variable con el nombre '+ simbolo.id, simbolo.linea, simbolo.columna)
                     return 
                 else:
+                    if simbolo.parametros is None or tmp_simbolo.parametros is None:
+                        global_utils.registrySemanticError('Declaracion', 'Ya se ha declarado previamente una función con el nombre '+ simbolo.id + ' con 0 parámetros.', simbolo.linea, simbolo.columna)
+                        return                         
                     if len(simbolo.parametros) == len(tmp_simbolo.parametros):                        
                         global_utils.registrySemanticError('Declaracion', 'Ya se ha declarado previamente una función con el nombre '+ simbolo.id + ' con ' +str(len(simbolo.parametros)) + ' parámetros.', simbolo.linea, simbolo.columna)
                         return                     
@@ -877,7 +880,10 @@ class Potencia(Expresion):
 
         if tipoI== None or tipoD == None:
             global_utils.registrySemanticError('^','Se ha recibido una variable no declarada.' , self.linea, self.columna)  
-            return Tipo(TipoPrimitivo.ERROR)         
+            return Tipo(TipoPrimitivo.ERROR)    
+
+        if tipoI.esDinamico() or tipoD.esDinamico():
+            return Tipo(TipoPrimitivo.DINAMICO)                 
 
         if (tipoI.esNumerico() and tipoD.esNumerico()):
             if(tipoI.esFloat() or tipoD.esFloat()):
@@ -893,25 +899,42 @@ class Potencia(Expresion):
     
     def getValor(self, entorno):
         tipo_actual = self.getTipo(entorno)
-
+        valorI = self.expresionI.getValor(entorno)
+        valorD = self.expresionD.getValor(entorno)
         if tipo_actual.esError():
             return None
+
+        if tipo_actual.esDinamico():
+            tipoI = entorno.obtenerTipo(valorI)
+            tipoD = entorno.obtenerTipo(valorD)
+
+            if tipoI.esFloat() or tipoD.esFloat():
+                self.valor = float(pow(valorI, valorD))
+                return self.valor     
+
+            if tipoI.esEntero() and tipoD.esEntero():
+                self.valor = int(pow(valorI,valorD))
+                return self.valor                
+            
+            if tipoI.esCadena() and tipoD.esEntero():
+                self.valor = '' 
+                contador = 0 
+                while ( contador < valorD):
+                    self.valor = self.valor + str(valorI)
+                    contador = contador + 1
+                return self.valor                
+            
+            return None        
             
         if tipo_actual.esFloat():
-            valorI = self.expresionI.getValor(entorno)
-            valorD = self.expresionD.getValor(entorno)
             self.valor = float(pow(valorI, valorD))
             return self.valor
             
         if tipo_actual.esEntero():            
-            valorI = self.expresionI.getValor(entorno)
-            valorD = self.expresionD.getValor(entorno)
             self.valor = int(pow(valorI,valorD))
             return self.valor
 
         if tipo_actual.esCadena():
-            valorI = self.expresionI.getValor(entorno)
-            valorD = self.expresionD.getValor(entorno)
             self.valor = '' 
             contador = 0 
             while ( contador < valorD):
