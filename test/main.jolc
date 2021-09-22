@@ -299,7 +299,7 @@ println(sqrt(1258));    # 35.4682957019364
 println("Operaciones con cadenas");
 println("para" * "caidismo");   # paracaidismo
 println("Holaaa"^5);    # HolaaaHolaaaHolaaaHolaaaHolaaa
-println("Hola Mundo!"[begin:5] * "Auxiliar"[1] * "Auxiliar"[2:end]);    # Hola Auxiliar
+#println("Hola Mundo!"[begin:5] * "Auxiliar"[1] * "Auxiliar"[2:end]);    # Hola Auxiliar
 println(length("Esto no sé cuanto mide"));  # 22
 println(uppercase("mayuscula"));    # MAYUSCULA
 println(lowercase("MINUSCULA"));    # minuscula
