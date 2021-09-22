@@ -604,9 +604,14 @@ def p_lista_instrucciones_7(t):
 def p_lista_instrucciones_8(t):
     '''lista_instrucciones : lista_instrucciones for'''
     t[1].agregarInstruccion(t[2])
-    t[0] = t[1]    
+    t[0] = t[1]
 
 def p_lista_instrucciones_9(t):
+    '''lista_instrucciones : lista_instrucciones funcion'''
+    t[1].agregarInstruccion(t[2])
+    t[0] = t[1]   
+
+def p_lista_instrucciones_10(t):
     '''lista_instrucciones : lista_instrucciones error'''    
     t[0] = t[1]
 
@@ -649,11 +654,42 @@ def p_lista_instrucciones_break(t):
 def p_lista_instrucciones_continue(t):
     '''lista_instrucciones : continue'''
     t[0] = AST.Bloque(t.lineno(1), 0)
-    t[0].agregarInstruccion(t[1])       
+    t[0].agregarInstruccion(t[1])    
+
+def p_lista_instrucciones_funcion(t):
+    '''lista_instrucciones : funcion'''
+    t[0] = AST.Bloque(t.lineno(1), 0)
+    t[0].agregarInstruccion(t[1])        
 
 def p_lista_instrucciones_error(t):
     '''lista_instrucciones : error'''
     t[0] = AST.Bloque(t.lineno(1), 0)    
+
+def p_instruccion_funcion_1(t):
+    ''' funcion : FUNCTION ID  PARIZQ lista_parametros PARDER lista_instrucciones END PUNTOCOMA'''
+    t[0] = AST.Funcion(t[2], t[4], t[6], t.lineno(1), 0)
+
+def p_instruccion_funcion_2(t):
+    ''' funcion : FUNCTION ID  PARIZQ lista_parametros PARDER  END PUNTOCOMA'''
+    t[0] = AST.Funcion(t[2], None, t[6], t.lineno(1), 0)
+
+def p_lista_parametros_1(t):
+    ''' lista_parametros : lista_parametros COMA parametro'''
+    t[0] = t[1]
+    t[0].append(t[3])
+
+def p_lista_parametro_2(t):
+    ''' lista_parametros : parametro'''
+    t[0] = []
+    t[0].append(t[1])
+
+def p_parametro_1(t):
+    ''' parametro : ID'''
+    t[0] = AST.Declaracion(t[1], None , None, t.lineno(1), 0)
+
+def p_parametro_2(t):
+    ''' parametro : ID DPUNTOS tipo'''
+    t[0] = AST.Declaracion(t[1], t[3], None, t.lineno(1), 0)
 
 def p_instruccion_declaracion(t):
     ''' declaracion : ID IGUAL e DPUNTOS tipo PUNTOCOMA'''
@@ -728,6 +764,10 @@ def p_tipo_char(t):
 def p_tipo_string(t):
     ''' tipo : TSTRING ''' 
     t[0] = AST.Tipo(AST.TipoPrimitivo.STRING)
+
+def p_tipo_id(t):
+    ''' tipo : ID ''' 
+    t[0] = AST.Tipo(AST.TipoPrimitivo.STRUCT, t[1])
 
 def p_instruccion_imprimirln(t):
     '''imprimirln : IMPRIMIRLN PARIZQ lista_e PARDER PUNTOCOMA '''
@@ -902,8 +942,8 @@ def p_expresion_concatenar(t):
     '''e : e DOLAR e'''
     t[0] =  AST.Concatenacion(t[1], t[3], t.lineno(1),0)    
 
-def p_expresion_ternario(t):
-    ''' e : e INTERROGACION e DPUNTO e '''
+def p_expresion_ternario_def(t):
+    ''' ternario : e INTERROGACION e DPUNTO e '''
     t[0] = AST.Ternario(t[1], t[3], t[5] ,t.lineno(1),0)
 
 def p_expresion_not(t):

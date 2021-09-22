@@ -26,6 +26,10 @@ class TipoPrimitivo(Enum):
     STRUCT = 8
     ERROR = 9
 
+class Rol(Enum):
+    VAR = 10
+    FUNCION = 11
+
 NOMBRES = {
     1: 'Nulo',
     2: 'int',
@@ -97,6 +101,7 @@ class Simbolo():
         self.valor = valor
         self.linea = linea
         self.columna = columna
+        self.rol = Rol.VAR
     
     def getTipo(self):
         return self.tipo
@@ -104,6 +109,23 @@ class Simbolo():
     def toJSON(self):
         return json.dumps(self, default=lambda o: o.__dict__, 
             sort_keys=True, indent=2)  
+
+class Funcion(Simbolo)            :
+    def __init__(self, id, parametros, instrucciones, linea, columna):
+        self.id = id 
+        self.parametros 
+        self.rol = Rol.FUNCION
+        self.linea = linea 
+        self.columna = columna 
+
+    def getTipo(self, entorno):
+        tmp = self.instrucciones.ejecutar(entorno)
+        if tmp is None:
+            return Tipo(TipoPrimitivo.ERROR)
+
+    def toJSON(self):
+        return json.dumps(self, default=lambda o: o.__dict__, 
+            sort_keys=True, indent=2)       
 
 '''Tabla de símbolos -------------------------------------------'''
 class TablaSimbolo():
@@ -468,6 +490,20 @@ class Continue(Instruccion):
     
     def ejecutar(self, entorno):
         return self
+
+
+class Funcion(Instruccion):
+    def __init__(self, nombre, parametros_formales, instrucciones, linea, columna):
+        self.id = nombre
+        self.parametros_formales = parametros_formales
+        self.instrucciones = instrucciones 
+        self.linea = linea
+        self.columna = columna 
+
+    def ejecutar(self, entorno):
+        # Creamos el símbolo de tipo funcion
+        funcion = Funcion(self.id, self.parametros_formales, self.instrucciones, self.linea, self.columna)
+        entorno.insertSimbolo(funcion)
 
 ## Expresion -----------------------------------------------------
 
