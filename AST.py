@@ -216,7 +216,7 @@ class Imprimir(Instruccion):
             tipo_tmp = exp.getTipo(entorno)
             if tipo_tmp is not None:
                 if tipo_tmp.esArreglo():                    
-                    imprimirArreglo(exp, entorno, cadena)
+                    cadena = self.imprimirArreglo(exp, entorno, cadena)
                 else:
                     valor = exp.getValor(entorno)
                     if valor == None:
@@ -226,9 +226,14 @@ class Imprimir(Instruccion):
 
     def imprimirArreglo(self, exp, entorno, cadena):        
         valor = exp.getValor(entorno)
+        if valor is None:
+            valor = exp.valor
         for i in valor:
-            #if i.tipo.esArreglo():                
-            cadena = str(cadena) + str(i.valor)
+            if i.tipo.esArreglo():
+                cadena = self.imprimirArreglo(i, entorno, cadena)
+            else:                           
+                cadena = str(cadena) + str(i.valor)
+        return cadena
         
 
 class ImprimirLn(Instruccion):
@@ -243,7 +248,7 @@ class ImprimirLn(Instruccion):
             tipo_tmp = exp.getTipo(entorno)
             if tipo_tmp is not None:
                 if tipo_tmp.esArreglo():                    
-                    imprimirArreglo(exp, entorno, cadena)
+                    cadena = '[' + self.imprimirArreglo(exp, entorno, cadena) + ']'
                 else:
                     valor = exp.getValor(entorno)
                     if valor == None:
@@ -251,11 +256,38 @@ class ImprimirLn(Instruccion):
                     cadena = str(cadena) + str(valor)
         entorno.tabla.imprimirln(cadena) 
 
-    def imprimirArreglo(self, exp, entorno, cadena):        
-        valor = exp.getValor(entorno)
-        for i in valor:
-            #if i.tipo.esArreglo():                
-            cadena = str(cadena) + str(i.valor)        
+    def imprimirArreglo(self, exp, entorno, cadena):  
+        if isinstance(exp, Simbolo):
+            valor = exp.valor
+            for i in valor:
+                if i.tipo.esArreglo():                
+                    cadena = '[' + self.imprimirArreglo(i, entorno, cadena) + ']'
+                else:
+                    if len(cadena) > 0:
+                        if cadena[len(cadena)-1] !='[':
+                            cadena = str(cadena) + ',' +  str(i.valor)            
+                        else:
+                            cadena = str(cadena) + str(i.valor) 
+                    else:           
+                        cadena = str(cadena) + str(i.valor) 
+            return cadena
+        else:
+            valor = exp.getValor(entorno)
+            if valor is None:
+                valor = exp.valor
+            for i in valor:
+                if i.tipo.esArreglo():                
+                    cadena = cadena + '[' + self.imprimirArreglo(i, entorno, cadena)+ ']'
+                else:
+                    if len(cadena) > 0:
+                        if cadena[len(cadena)-1] !='[':
+                            cadena = str(cadena) + ',' + str(i.valor)
+                        else:        
+                            cadena = str(cadena) +  str(i.valor)
+                    else:
+                        cadena = str(cadena) +  str(i.valor)
+            return cadena
+
 
 class Declaracion(Instruccion):
     def __init__(self, id, expresion, tipo , linea, columna):
@@ -500,13 +532,26 @@ class Concatenacion(Expresion):
         return Tipo(TipoPrimitivo.STRING)
     
     def getValor(self, entorno):
+        cadena = ''
         tipo_tmp = self.getTipo(entorno)
         if tipo_tmp.esError():
             return None
         valorI = self.expresionI.getValor(entorno)
-        valorD = self.expresionD.getValor(entorno)        
-        return str(valorI) + str(valorD)
-
+        valorD = self.expresionD.getValor(entorno)                 
+        cadena = self.recorrer(valorI, cadena)
+        cadena = self.recorrer(valorD, cadena)
+        return cadena
+    
+    def recorrer(self,valor, cadena):
+        for i in valor:
+            if isinstance(i, Simbolo):
+                cadena = cadena + str(i.valor)
+            elif isinstance(i,list):
+                self.recorrer(i, cadena)
+            else:
+                cadena = cadena + str(i)
+        return cadena
+        
 
 class Resta(Expresion):
     def __init__(self, expresionI, expresionD, linea, columna):
@@ -1374,9 +1419,42 @@ class Arreglo(Expresion):
                 arreglo_simbolos.append(simbolo)
         return arreglo_simbolos
 
+class Ternario(Expresion):
+    def __init__(self, condicion , expV, expF , linea, columna):
+        self.condicion = condicion
+        self.expV = expV 
+        self.expF = expF 
+        self.linea = linea 
+        self.columna = columna 
 
-                
+    def getTipo(self, entorno):
+        tipo_valor = self.condicion.getTipo(entorno)
+        if tipo_valor is not None:
+           global_utils.registrySemanticError('Ternario','Valor erroneo condición.' , self.linea, self.columna) 
+           return Tipo(TipoPrimitivo.ERROR)
+        if not tipo_valor.esBooleano():
+           global_utils.registrySemanticError('Ternario','Valor erroneo condición.' , self.linea, self.columna) 
+           return Tipo(TipoPrimitivo.ERROR)        
+        valor = self.condicion.getValor(entorno)
+        if valor:
+            return self.expV.getTipo(entorno)
+        else:
+            return self.expF.getTipo(entorno)
 
+    def getValor(self, entorno):
+        tipo_valor = self.condicion.getTipo(entorno)
+        if tipo_valor is None:
+           global_utils.registrySemanticError('Ternario','Valor erroneo condición.' , self.linea, self.columna) 
+           return Tipo(TipoPrimitivo.ERROR)
+        if not tipo_valor.esBool():
+           global_utils.registrySemanticError('Ternario','Valor erroneo condición.' , self.linea, self.columna) 
+           return Tipo(TipoPrimitivo.ERROR)        
+        valor = self.condicion.getValor(entorno)
+        if valor:
+            return self.expV.getValor(entorno)
+        else:
+            return self.expF.getValor(entorno)        
+    
 
     
 

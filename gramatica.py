@@ -87,7 +87,8 @@ tokens = (
     'BREAK',
     'CONTINUE',
     'FUNCTION',
-    'END'
+    'END',
+    'INTERROGACION'
 
 )
 
@@ -101,6 +102,11 @@ def t_INITIAL_impresion_expresion_PUNTOCOMA(t):
     r';'
     t.lexer.begin('INITIAL')
     return t
+
+def t_INITIAL_impresion_expresion_INTERROGACION(t):
+    r'\?'
+    t.lexer.begin('INITIAL')
+    return t    
 
 def t_INITIAL_impresion_expresion_COMA(t):
     r','
@@ -827,7 +833,10 @@ def p_expresion_lowercase(t):
 def p_expresion_arreglo(t):
     ''' e : arreglo'''
     t[0] = t[1]
-    
+
+def p_expresion_ternario(t):
+    ''' e : ternario '''
+    t[0] = t[1]
 
 def p_expresion_negativo(t):
     '''e : MENOS e  %prec UMINUS'''
@@ -892,6 +901,10 @@ def p_expresion_and(t):
 def p_expresion_concatenar(t):
     '''e : e DOLAR e'''
     t[0] =  AST.Concatenacion(t[1], t[3], t.lineno(1),0)    
+
+def p_expresion_ternario(t):
+    ''' e : e INTERROGACION e DPUNTO e '''
+    t[0] = AST.Ternario(t[1], t[3], t[5] ,t.lineno(1),0)
 
 def p_expresion_not(t):
     '''e : NOT e '''
