@@ -183,3 +183,10 @@ tortuga es mi favorito
 
 
 println("animales = $(animales)");
+
+function obtenerValor()
+	println("Obtener Valor");
+	return 3;
+end;
+
+valor = obtenerValor();

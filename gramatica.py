@@ -95,6 +95,7 @@ tokens = (
 
 
 def imprimirEstado(str):
+    print(str)
     pass
 
 #tipos primitivos
@@ -610,6 +611,7 @@ def p_lista_instrucciones_7(t):
     '''lista_instrucciones : lista_instrucciones continue'''
     t[1].agregarInstruccion(t[2])
     t[0] = t[1]   
+    
 
 def p_lista_instrucciones_8(t):
     '''lista_instrucciones : lista_instrucciones for'''
@@ -629,6 +631,11 @@ def p_lista_instrucciones_10(t):
 def p_lista_instrucciones_11(t):
     '''lista_instrucciones : lista_instrucciones error'''    
     t[0] = t[1]
+
+def p_lista_instrucciones_12(t):
+    '''lista_instrucciones : lista_instrucciones return'''
+    t[1].agregarInstruccion(t[2])
+    t[0] = t[1]       
 
 
 def p_lista_instrucciones_imprimir(t):
@@ -679,7 +686,14 @@ def p_lista_instrucciones_funcion(t):
 def p_lista_instrucciones_llamada(t):
     '''lista_instrucciones : llamada PUNTOCOMA'''
     t[0] = AST.Bloque(t.lineno(1), 0)
+    t[0].agregarInstruccion(t[1])    
+
+
+def p_lista_instrucciones_return(t):
+    '''lista_instrucciones : return'''
+    t[0] = AST.Bloque(t.lineno(1), 0)
     t[0].agregarInstruccion(t[1])            
+
 
 def p_lista_instrucciones_error(t):
     '''lista_instrucciones : error'''
@@ -763,7 +777,15 @@ def p_instruccion_BREAK(t):
 
 def p_instruccion_CONTINUE(t):
     '''continue : CONTINUE PUNTOCOMA'''
-    t[0] = AST.Continue(t.lineno(1),0)    
+    t[0] = AST.Continue(t.lineno(1),0)   
+
+def p_instruccion_CONTINUE_1(t):
+    '''return : RETURN e PUNTOCOMA'''
+    t[0] = AST.Retorno(t[2], t.lineno(1),0)  
+
+def p_instruccion_CONTINUE_2(t):
+    '''return : RETURN  PUNTOCOMA'''
+    t[0] = AST.Retorno(None,t.lineno(1),0)         
 
 def p_tipo_int64(t):
     ''' tipo : TINT64'''
@@ -900,6 +922,7 @@ def p_expresion_ternario(t):
 
 def p_expresion_llamada(t):
     ''' e : llamada '''
+    t[0] = t[1]
 
 def p_expresion_negativo(t):
     '''e : MENOS e  %prec UMINUS'''

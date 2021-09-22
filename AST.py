@@ -25,6 +25,7 @@ class TipoPrimitivo(Enum):
     ARREGLO = 7
     STRUCT = 8
     ERROR = 9
+    DINAMICO =20
 
 class Rol(Enum):
     VAR = 10
@@ -69,6 +70,8 @@ class Tipo():
             return 'arreglo'
         if self.tipo ==  TipoPrimitivo.STRUCT:
             return 'struct'
+        if self.tipo ==  TipoPrimitivo.DINAMICO:
+            return 'dinamico'            
         if self.tipo ==  TipoPrimitivo.ERROR:
             return 'error'        
 
@@ -88,6 +91,10 @@ class Tipo():
         return self.tipo == TipoPrimitivo.ERROR
     def esArreglo(self):
         return self.tipo == TipoPrimitivo.ARREGLO
+    def esLlamada(self):
+        return self.tipo == TipoPrimitivo.LLAMADA   
+    def esDinamico(self):
+        return self.tipo == TipoPrimitivo.DINAMICO              
     def esNumerico(self):
         return self.tipo == TipoPrimitivo.ENTERO or self.tipo == TipoPrimitivo.FLOAT 
     def compararTipo(self, tipo):
@@ -199,8 +206,33 @@ class Entorno():
 
     def toJSON(self):
         return json.dumps(self, default=lambda o: o.__dict__, 
-            sort_keys=True, indent=2)         
+            sort_keys=True, indent=2)  
 
+    '''
+    NULO = 1
+    ENTERO = 2
+    FLOAT = 3
+    BOOL = 4
+    CHAR = 5
+    STRING = 6
+    ARREGLO = 7
+    STRUCT = 8
+    ERROR = 9
+    '''
+    def obtenerTipo(self, valor):
+        if valor is None:
+            return Tipo(TipoPrimitivo.NULO)
+        if isinstance(valor, int):
+            return Tipo(TipoPrimitivo.ENTERO)
+        if isinstance(valor, float):
+            return Tipo(TipoPrimitivo.FLOAT)
+        if isinstance(valor, bool):
+            return Tipo(TipoPrimitivo.BOOL)
+        if isinstance(valor, str):
+            return Tipo(TipoPrimitivo.STRING)            
+        if isinstance(valor, Simbolo):
+            return valor.tipo
+        return Tipo(TipoPrimitivo.ERROR)
 ### AST 
 class NodoAST(ABC):
     pass
@@ -239,6 +271,8 @@ class Bloque(Instruccion):
                 return inst
             elif isinstance(inst, Continue):
                 return inst
+            elif isinstance(inst, Retorno):
+                return inst.ejecutar(entorno)
             else:
                 if isinstance(inst, Instruccion):
                     val = inst.ejecutar(entorno)
@@ -297,15 +331,28 @@ class ImprimirLn(Instruccion):
     def ejecutar(self, entorno):
         cadena = ''
         for exp in self.lista_expresiones:
-            tipo_tmp = exp.getTipo(entorno)
-            if tipo_tmp is not None:
-                if tipo_tmp.esArreglo():                    
-                    cadena = '[' + self.imprimirArreglo(exp, entorno, cadena) + ']'
-                else:
-                    valor = exp.getValor(entorno)
-                    if valor == None:
-                        valor = 'nothing'
-                    cadena = str(cadena) + str(valor)
+            if not isinstance(exp, Llamada):
+                tipo_tmp = exp.getTipo(entorno)
+                if tipo_tmp is not None:                
+                    if tipo_tmp.esArreglo():                    
+                        cadena = '[' + self.imprimirArreglo(exp, entorno, cadena) + ']'
+                    else:
+                        valor = exp.getValor(entorno)
+                        if valor == None:
+                            valor = 'nothing'
+                        cadena = str(cadena) + str(valor)
+            else:
+                valor = exp.getValor(entorno)
+                tipo_tmp = entorno.obtenerTipo(valor)
+                if tipo_tmp is not None:                
+                    if tipo_tmp.esArreglo():                    
+                        cadena = '[' + self.imprimirArreglo(exp, entorno, cadena) + ']'
+                    else:
+                        valor = exp.getValor(entorno)
+                        if valor == None:
+                            valor = 'nothing'
+                        cadena = str(cadena) + str(valor)                
+
         entorno.tabla.imprimirln(cadena) 
 
     def imprimirArreglo(self, exp, entorno, cadena):  
@@ -375,10 +422,16 @@ class Declaracion(Instruccion):
                     global_utils.registrySemanticError('Declaracion', self.id + '. Se esperaba un valor de tipo ' + self.tipo.getNombre() + ' y no se ha obtenido valor. ', self.linea, self.columna) 
             else: 
                 # O puede ser una asignación
-                tipo_tmp = self.expresion.getTipo(entorno)        
-                valor = self.expresion.getValor(entorno)
-                nuevo_simbolo = Simbolo(self.id, tipo_tmp, valor, self.linea, self.columna)            
-                entorno.tabla.registrarSimbolo(nuevo_simbolo)        
+                if isinstance(self.expresion, Llamada):
+                    valor = self.expresion.getValor(entorno)
+                    tipo = entorno.obtenerTipo(valor)                    
+                    nuevo_simbolo = Simbolo(self.id, tipo, valor, self.linea, self.columna)            
+                    entorno.tabla.registrarSimbolo(nuevo_simbolo)                      
+                else:
+                    tipo_tmp = self.expresion.getTipo(entorno)        
+                    valor = self.expresion.getValor(entorno)
+                    nuevo_simbolo = Simbolo(self.id, tipo_tmp, valor, self.linea, self.columna)            
+                    entorno.tabla.registrarSimbolo(nuevo_simbolo)        
 
 class If(Instruccion):
     def __init__(self, expresion, bloque, sino, linea, columna):
@@ -521,6 +574,22 @@ class Continue(Instruccion):
     def ejecutar(self, entorno):
         return self
 
+class Retorno(Instruccion):
+    def __init__(self,expresion, linea, columna):
+        self.expresion = expresion
+        self.linea = linea;
+        self.columna = columna;
+    
+    def ejecutar(self, entorno):
+        if self.expresion is None:
+            return self
+        tipo_valor = self.expresion.getTipo(entorno)
+        if tipo_valor is not None:
+            if not tipo_valor.esError():
+                valor_tmp = self.expresion.getValor(entorno)
+                return valor_tmp
+            else:
+                global_utils.registrySemanticError('return', 'valor de retorno inválido. Verifique variables', self.linea, self.columna)            
 
 class Funcion(Instruccion):
     def __init__(self, nombre, parametros_formales, instrucciones, linea, columna):
@@ -683,12 +752,14 @@ class Multiplicacion(Expresion):
     def getTipo(self, entorno):
         tipoI = self.expresionI.getTipo(entorno)
         tipoD = self.expresionD.getTipo(entorno)
-
+        
         if tipoI== None or tipoD == None:
             global_utils.registrySemanticError('*','Se ha recibido una variable no declarada.' , self.linea, self.columna)  
             return Tipo(TipoPrimitivo.ERROR)            
 
-        ## Si ambos son string se hace una concatenacion
+        if tipoI.esDinamico() or tipoD.esDinamico():
+            return Tipo(TipoPrimitivo.DINAMICO)
+        
         if(tipoI.esCadena() and tipoD.esCadena()):
             return Tipo(TipoPrimitivo.STRING)
 
@@ -708,6 +779,20 @@ class Multiplicacion(Expresion):
             
         valorI = self.expresionI.getValor(entorno)
         valorD = self.expresionD.getValor(entorno)            
+
+        if tipo_actual.esDinamico():
+            tipoI = entorno.obtenerTipo(valorI)
+            tipoD = entorno.obtenerTipo(valorD)
+            if tipoI.esCadena() or tipoD.esCadena():
+                self.valor = str(valorI) + str(valorD)
+                return self.valor
+            if tipoI.esFloat() or tipoD.esFloat():
+                self.valor = float(valorI) * float(valorD)
+                return self.valor                
+            if tipoI.esEntero() and tipoD.esEntero():
+                self.valor = int(valorI) * int(valorD)
+                return self.valor                
+            return None
 
         if tipo_actual.esCadena():
             self.valor = str(valorI) + str(valorD)
@@ -739,6 +824,9 @@ class Division(Expresion):
             global_utils.registrySemanticError('/','Se ha recibido una variable no declarada.' , self.linea, self.columna)  
             return Tipo(TipoPrimitivo.ERROR)         
 
+        if tipoI.esDinamico() or tipoD.esDinamico():
+            return Tipo(TipoPrimitivo.DINAMICO)
+                
         if (tipoI.esNumerico() and tipoD.esNumerico()):
             return Tipo(TipoPrimitivo.FLOAT)
 
@@ -747,19 +835,30 @@ class Division(Expresion):
     
     def getValor(self, entorno):
         tipo_actual = self.getTipo(entorno)
+        valorI = self.expresionI.getValor(entorno)
+        valorD = self.expresionD.getValor(entorno)        
 
         if tipo_actual.esError():
             return None
+
+        if tipo_actual.esDinamico():
+            tipoI = entorno.obtenerTipo(valorI)
+            tipoD = entorno.obtenerTipo(valorD)
+
+            if tipoI.esFloat() or tipoD.esFloat():
+                self.valor = float(valorI) / float(valorD)
+                return self.valor     
+
+            if tipoI.esEntero() and tipoD.esEntero():
+                self.valor = int(valorI) / int(valorD)
+                return self.valor                
+            return None            
             
         if tipo_actual.esFloat():
-            valorI = self.expresionI.getValor(entorno)
-            valorD = self.expresionD.getValor(entorno)
             self.valor = float(valorI) / float(valorD)
             return self.valor
             
         if tipo_actual.esEntero():            
-            valorI = self.expresionI.getValor(entorno)
-            valorD = self.expresionD.getValor(entorno)
             self.valor = int(valorI) / int(valorD)
             return self.valor
         
@@ -1539,7 +1638,7 @@ class Llamada(Expresion):
         self.columna = columna
     
     def getTipo(self, entorno):
-        return None
+        return Tipo(TipoPrimitivo.DINAMICO)
     
     def getValor(self, entorno):
         nuevoEntorno = Entorno(None)
@@ -1565,6 +1664,7 @@ class Llamada(Expresion):
                         nuevoEntorno.insertSimbolo(simbolo)                    
                     indice +=1
             valor = funcion_a_llamar.instrucciones.ejecutar(nuevoEntorno) 
+            return valor
         else:
             global_utils.registrySemanticError('llamada','función ' +self.id + ' no declarada.' , self.linea, self.columna) 
         
