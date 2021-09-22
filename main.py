@@ -14,7 +14,8 @@ def home():
 
 @app.route("/analyze", methods=["POST","GET"])
 def analyze():
-    if request.method == "POST":
+    if request.method == "POST":  
+        AST.consola = []      
         global_utils.iniciar()
         inpt = request.form["inpt"] 
         raiz = parse(inpt) 

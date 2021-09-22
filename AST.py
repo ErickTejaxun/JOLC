@@ -82,6 +82,8 @@ class Tipo():
         return self.tipo == TipoPrimitivo.CHAR
     def esError(self):
         return self.tipo == TipoPrimitivo.ERROR
+    def esArreglo(self):
+        return self.tipo == TipoPrimitivo.ARREGLO
     def esNumerico(self):
         return self.tipo == TipoPrimitivo.ENTERO or self.tipo == TipoPrimitivo.FLOAT 
     def compararTipo(self, tipo):
@@ -125,7 +127,7 @@ class TablaSimbolo():
         if len(consola) > 0:
             texto = consola[len(consola)-1]        
             consola[len(consola)-1] = texto+str(valor)
-        else: 
+        else:             
             consola.append(str(valor))
 
     def toJSON(self):
@@ -211,11 +213,23 @@ class Imprimir(Instruccion):
     def ejecutar(self, entorno):
         cadena = ''
         for exp in self.lista_expresiones:
-            valor = exp.getValor(entorno)
-            if valor == None:
-                valor = 'nothing'
-            cadena = str(cadena) + str(valor)
+            tipo_tmp = exp.getTipo(entorno)
+            if tipo_tmp is not None:
+                if tipo_tmp.esArreglo():                    
+                    imprimirArrlego(exp, entorno, cadena)
+                else:
+                    valor = exp.getValor(entorno)
+                    if valor == None:
+                        valor = 'nothing'
+                    cadena = str(cadena) + str(valor)
         entorno.tabla.imprimir(cadena)
+
+    def imprimirArreglo(self, exp, entorno, cadena):        
+        valor = exp.getValor(entorno)
+        for i in valor:
+            #if i.tipo.esArreglo():                
+            cadena = str(cadena) + str(i.valor)
+        
 
 class ImprimirLn(Instruccion):
     def __init__(self, lista_expresiones, linea, columna):
@@ -226,11 +240,22 @@ class ImprimirLn(Instruccion):
     def ejecutar(self, entorno):
         cadena = ''
         for exp in self.lista_expresiones:
-            valor = exp.getValor(entorno)
-            if valor == None:
-                valor = 'nothing'            
-            cadena = str(cadena) + str(valor)
+            tipo_tmp = exp.getTipo(entorno)
+            if tipo_tmp is not None:
+                if tipo_tmp.esArreglo():                    
+                    imprimirArrlego(exp, entorno, cadena)
+                else:
+                    valor = exp.getValor(entorno)
+                    if valor == None:
+                        valor = 'nothing'
+                    cadena = str(cadena) + str(valor)
         entorno.tabla.imprimirln(cadena) 
+
+    def imprimirArreglo(self, exp, entorno, cadena):        
+        valor = exp.getValor(entorno)
+        for i in valor:
+            #if i.tipo.esArreglo():                
+            cadena = str(cadena) + str(i.valor)        
 
 class Declaracion(Instruccion):
     def __init__(self, id, expresion, tipo , linea, columna):
@@ -356,11 +381,11 @@ class For(Instruccion):
                         if isinstance(resultado_ejecucion, Break):
                             return resultado_ejecucion
                         if isinstance(resultado_ejecucion, Continue):
-                            return resultado_ejecucion                    
-
+                            return resultado_ejecucion                            
         else:
-            tipo_tmp = self.expresion.getTipo(entorno)
+            tipo_tmp = self.expresion.getTipo(entorno)            
             if tipo_tmp is not None:
+                #Cadena
                 if tipo_tmp.esCadena():
                     valor = self.expresion.getValor(entorno) 
                     entornoLocal = Entorno(None)
@@ -375,11 +400,27 @@ class For(Instruccion):
                                     return resultado_ejecucion
                                 if isinstance(resultado_ejecucion, Continue):
                                     return resultado_ejecucion
-                
-
-
-
-
+                #Arrelgo
+                if tipo_tmp.esArreglo():
+                    # Esto nos devuelve un arreglo
+                    valor = self.expresion.getValor(entorno)                                                            
+                    entornoLocal = Entorno(None)
+                    #Creamos la variable temporal                                           
+                    simbolo = Simbolo(self.id, None, None, self.linea, self.columna)
+                    entornoLocal.insertSimbolo(simbolo)
+                    for i in valor:       
+                        tipo_tmp = i.tipo
+                        if tipo_tmp is not None:
+                            valor_tmp = i.valor
+                            simbolo.valor = valor_tmp
+                            simbolo.tipo = tipo_tmp                                                 
+                            resultado_ejecucion = self.bloque.ejecutar(entornoLocal)
+                            if resultado_ejecucion is not None:
+                                if isinstance(resultado_ejecucion, Break):
+                                    return resultado_ejecucion
+                                if isinstance(resultado_ejecucion, Continue):
+                                    return resultado_ejecucion                    
+                        
 class Break(Instruccion):
     def __init__(self, linea, columna):
         self.linea = linea;
@@ -1287,6 +1328,31 @@ class Rango(Expresion):
             valorD = self.expresionFinal.getValor(entorno)
             return range(int(valorI), int(valorD)+1)
 
+class Arreglo(Expresion):
+    def __init__(self, lista_expresiones, linea, columna):
+        self.lista = lista_expresiones
+        self.linea = linea
+        self.columna = columna
+    
+    def getTipo(self, entorno):
+        return Tipo(TipoPrimitivo.ARREGLO)
+    
+    def getValor(self, entorno):
+        arreglo_simbolos = []
+        for exp in self.lista:
+            tipo_actual = exp.getTipo(entorno)
+            if tipo_actual is None:
+                global_utils.registrySemanticError('elemento arreglo','Valor inválido, variable no declarada.' , self.linea, self.columna)
+            elif tipo_actual.esError():
+                global_utils.registrySemanticError('elemento arreglo','Valor inválido, variable no declarada.' , self.linea, self.columna)
+            else:
+                valor = exp.getValor(entorno)
+                simbolo = Simbolo('', tipo_actual, valor, self.linea, self.columna)
+                arreglo_simbolos.append(simbolo)
+        return arreglo_simbolos
+
+
+                
 
 
     

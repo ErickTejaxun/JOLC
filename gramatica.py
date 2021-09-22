@@ -44,6 +44,8 @@ tokens = (
     'IGUAL',
     'DPUNTOS',
     'DPUNTO',
+    'BRACKETI',
+    'BRACKETD',
     #-------PRIMITIVAS
     'NULO',
     'FLOAT',
@@ -184,6 +186,16 @@ def t_INITIAL_impresion_expresion_MEN(t):
     r'<'
     print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
     return t
+
+def t_INITIAL_impresion_expresion_BRACKETI(t):
+    r'\['
+    print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
+    return t    
+
+def t_INITIAL_impresion_expresion_BRACKETD(t):
+    r'\]'
+    print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
+    return t    
 
 t_INITIAL_impresion_expresion_POW = r'\^'
 t_INITIAL_impresion_expresion_MODULO = r'%'
@@ -731,6 +743,12 @@ def p_lista_expresion_base(t):
     t[0] = []
     t[0].append(t[1])
 
+
+def p_arreglo_elemento(t):
+    ''' arreglo : BRACKETI lista_e BRACKETD'''
+    t[0] = AST.Arreglo(t[2],t.lineno(1),0)
+
+
 def p_uppercase(t):
     '''uppercase : UPPERCASE PARIZQ e PARDER  '''
     t[0] = AST.Uppercase(t[3], t.lineno(1), 0)
@@ -800,6 +818,11 @@ def p_expresion_uppercase(t):
 def p_expresion_lowercase(t):
     '''e : lowercase'''
     t[0] = t[1]
+
+def p_expresion_arreglo(t):
+    ''' e : arreglo'''
+    t[0] = t[1]
+    
 
 def p_expresion_negativo(t):
     '''e : MENOS e  %prec UMINUS'''
