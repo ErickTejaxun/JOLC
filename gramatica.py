@@ -612,6 +612,11 @@ def p_lista_instrucciones_9(t):
     t[0] = t[1]   
 
 def p_lista_instrucciones_10(t):
+    '''lista_instrucciones : lista_instrucciones llamada PUNTOCOMA'''
+    t[1].agregarInstruccion(t[2])
+    t[0] = t[1]       
+
+def p_lista_instrucciones_11(t):
     '''lista_instrucciones : lista_instrucciones error'''    
     t[0] = t[1]
 
@@ -659,7 +664,12 @@ def p_lista_instrucciones_continue(t):
 def p_lista_instrucciones_funcion(t):
     '''lista_instrucciones : funcion'''
     t[0] = AST.Bloque(t.lineno(1), 0)
-    t[0].agregarInstruccion(t[1])        
+    t[0].agregarInstruccion(t[1])  
+
+def p_lista_instrucciones_llamada(t):
+    '''lista_instrucciones : llamada PUNTOCOMA'''
+    t[0] = AST.Bloque(t.lineno(1), 0)
+    t[0].agregarInstruccion(t[1])            
 
 def p_lista_instrucciones_error(t):
     '''lista_instrucciones : error'''
@@ -670,8 +680,8 @@ def p_instruccion_funcion_1(t):
     t[0] = AST.Funcion(t[2], t[4], t[6], t.lineno(1), 0)
 
 def p_instruccion_funcion_2(t):
-    ''' funcion : FUNCTION ID  PARIZQ lista_parametros PARDER  END PUNTOCOMA'''
-    t[0] = AST.Funcion(t[2], None, t[6], t.lineno(1), 0)
+    ''' funcion : FUNCTION ID  PARIZQ  PARDER lista_instrucciones  END PUNTOCOMA'''
+    t[0] = AST.Funcion(t[2], None, t[5], t.lineno(1), 0)
 
 def p_lista_parametros_1(t):
     ''' lista_parametros : lista_parametros COMA parametro'''
@@ -878,6 +888,9 @@ def p_expresion_ternario(t):
     ''' e : ternario '''
     t[0] = t[1]
 
+def p_expresion_llamada(t):
+    ''' e : llamada '''
+
 def p_expresion_negativo(t):
     '''e : MENOS e  %prec UMINUS'''
     t[0] = AST.Negativo(t[2], t.lineno(1), 0)
@@ -945,6 +958,14 @@ def p_expresion_concatenar(t):
 def p_expresion_ternario_def(t):
     ''' ternario : e INTERROGACION e DPUNTO e '''
     t[0] = AST.Ternario(t[1], t[3], t[5] ,t.lineno(1),0)
+
+def p_llamada_definicion(t):
+    ''' llamada : ID PARIZQ lista_e PARDER'''
+    t[0] = AST.Llamada(t[1], t[3], t.lineno(1), 0)
+
+def p_llamada_definicion_2(t):
+    ''' llamada : ID PARIZQ  PARDER'''
+    t[0] = AST.Llamada(t[1], None, t.lineno(1), 0)
 
 def p_expresion_not(t):
     '''e : NOT e '''

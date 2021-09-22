@@ -117,6 +117,7 @@ class FuncionSimbolo(Simbolo):
         self.rol = Rol.FUNCION
         self.linea = linea 
         self.columna = columna 
+        self.instrucciones = instrucciones
 
     def getTipo(self, entorno):
         tmp = self.instrucciones.ejecutar(entorno)
@@ -133,7 +134,7 @@ class TablaSimbolo():
         self.tabla = {}
         self.consola = []
 
-    def registrarSimbolo(self, simbolo):
+    def registrarSimbolo(self, simbolo):        
         tmp_simbolo = self.tabla.get(simbolo.id)
         if tmp_simbolo is not None:
             if tmp_simbolo.rol == simbolo.rol:
@@ -144,7 +145,7 @@ class TablaSimbolo():
                     if len(simbolo.parametros) == len(tmp_simbolo.parametros):                        
                         global_utils.registrySemanticError('Declaracion', 'Ya se ha declarado previamente una función con el nombre '+ simbolo.id + ' con ' +str(len(simbolo.parametros)) + ' parámetros.', simbolo.linea, simbolo.columna)
                         return                     
-                    else:
+                    else:                        
                         self.tabla[simbolo.id] = simbolo                    
             else:
                 self.tabla[simbolo.id] = simbolo
@@ -155,6 +156,10 @@ class TablaSimbolo():
     def getSimbolo(self, id):
         entornoActual = self
         return self.tabla.get(id)
+
+    def getFuncion(self, id, numero_parametros):
+        entornoActual = self
+        return self.tabla.get(id)        
     
     def imprimirln(self, valor):        
         global consola
@@ -235,12 +240,21 @@ class Bloque(Instruccion):
             elif isinstance(inst, Continue):
                 return inst
             else:
-                val = inst.ejecutar(entorno)
-                if val is not None:
-                    if isinstance(val, Break):
-                        return val
-                    if isinstance(val, Continue):
-                        return val
+                if isinstance(inst, Instruccion):
+                    val = inst.ejecutar(entorno)
+                    if val is not None:
+                        if isinstance(val, Break):
+                            return val
+                        if isinstance(val, Continue):
+                            return val
+                elif isinstance(inst, Expresion):
+                    val = inst.getValor(entorno)
+                    if val is not None:
+                        if isinstance(val, Break):
+                            return val
+                        if isinstance(val, Continue):
+                            return val                    
+
 
 class Imprimir(Instruccion):
     def __init__(self, lista_expresiones, linea, columna):
@@ -518,6 +532,11 @@ class Funcion(Instruccion):
 
     def ejecutar(self, entorno):
         # Creamos el símbolo de tipo funcion
+        nombre = self.id 
+        if self.parametros_formales is not None:
+            for i in self.parametros_formales:
+                nombre = nombre +'$var'
+        self.id = nombre
         funcion = FuncionSimbolo(self.id, self.parametros_formales, self.instrucciones, self.linea, self.columna)
         entorno.insertSimbolo(funcion)
 
@@ -1510,7 +1529,45 @@ class Ternario(Expresion):
         if valor:
             return self.expV.getValor(entorno)
         else:
-            return self.expF.getValor(entorno)        
+            return self.expF.getValor(entorno)      
+
+class Llamada(Expresion):
+    def __init__(self, id, parametros_actuales, linea, columna):
+        self.id = id
+        self.parametros = parametros_actuales 
+        self.linea = linea
+        self.columna = columna
+    
+    def getTipo(self, entorno):
+        return None
+    
+    def getValor(self, entorno):
+        nuevoEntorno = Entorno(None)
+        #Creamos las nuevas variables. 
+        nombre_funcion_buscada = self.id 
+        if self.parametros is not None:
+            for i in self.parametros:
+                nombre_funcion_buscada = nombre_funcion_buscada +'$var'
+        #buscamos la funcion
+        funcion_a_llamar = entorno.getSimbolo(nombre_funcion_buscada)
+        if funcion_a_llamar is not None:
+            if funcion_a_llamar.parametros is  not None:
+                indice = 0
+                for param in funcion_a_llamar.parametros:
+                    #Pasamos los valores de los parametros actuales 
+                    tipo_tmp = self.parametros[indice].getTipo(entorno)
+                    if tipo_tmp is None:
+                        global_utils.registrySemanticError('Llamada','Parámetro ' + str(indice) + ' erroneo.', self.linea, self.columna) 
+                        return 
+                    elif not tipo_tmp.esError():
+                        valor_tmp = self.parametros[indice].getValor(entorno)
+                        simbolo = Simbolo(param.id, tipo_tmp, valor_tmp, self.linea, self.columna)
+                        nuevoEntorno.insertSimbolo(simbolo)                    
+                    indice +=1
+            valor = funcion_a_llamar.instrucciones.ejecutar(nuevoEntorno) 
+        else:
+            global_utils.registrySemanticError('llamada','función ' +self.id + ' no declarada.' , self.linea, self.columna) 
+        
     
 
     
