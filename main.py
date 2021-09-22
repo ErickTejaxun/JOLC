@@ -4,7 +4,7 @@ from singlenton import global_utils, Error
 import json
 from json import JSONEncoder
 import AST as AST
-
+import os
 
 
 app = Flask(__name__)
@@ -36,7 +36,9 @@ def analyze():
             else:
                 return jsonify(output=salida, errores= False)
     else:
-        codigo = ''
+        path= os.getcwd() +"/test/main.jolc"
+        archivo = open(path, 'r')
+        codigo = archivo.read()
         return render_template('analyze.html', initial=codigo)
 
 @app.route("/reports", methods=["POST", "GET"])
