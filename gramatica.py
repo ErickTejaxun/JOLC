@@ -86,6 +86,7 @@ tokens = (
     'IN',
     'BREAK',
     'CONTINUE',
+    'FUNCTION',
     'END'
 
 )
@@ -204,6 +205,11 @@ t_INITIAL_impresion_expresion_DPUNTO = r':'
 
 # ignored characters, tab and space
 t_INITIAL_impresion_ignore = " \t"
+
+def t_INITIAL_impresion_expresion_FUNCTION(t):
+    r'function'
+    print('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
+    return t 
 
 def t_INITIAL_impresion_expresion_CONTINUE(t):
     r'continue'
@@ -529,13 +535,14 @@ import AST as AST
 # Precedence and asociation
 precedence = (
     ('left', 'OR'),
-    ('left', 'AND'),
-    ('left', 'IGIG', 'DIFDE'),
+    ('left', 'AND'),    
+    ('left', 'MENIG','MAYIG'),
     ('nonassoc', 'MEN', 'MAY'),
-    ('left', 'POW'),
+    ('left', 'IGIG', 'DIFDE'),    
     ('left','DOLAR'),
     ('left','MAS','MENOS'),
     ('left','POR','DIV'),    
+    ('left', 'POW'),
     ('right', 'UMINUS'),
     ('left','PARIZQ', 'PARDER'),  
     ('nonassoc', 'SI_SIMPLE')  
@@ -743,11 +750,9 @@ def p_lista_expresion_base(t):
     t[0] = []
     t[0].append(t[1])
 
-
 def p_arreglo_elemento(t):
     ''' arreglo : BRACKETI lista_e BRACKETD'''
     t[0] = AST.Arreglo(t[2],t.lineno(1),0)
-
 
 def p_uppercase(t):
     '''uppercase : UPPERCASE PARIZQ e PARDER  '''

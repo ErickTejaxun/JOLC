@@ -216,7 +216,7 @@ class Imprimir(Instruccion):
             tipo_tmp = exp.getTipo(entorno)
             if tipo_tmp is not None:
                 if tipo_tmp.esArreglo():                    
-                    imprimirArrlego(exp, entorno, cadena)
+                    imprimirArreglo(exp, entorno, cadena)
                 else:
                     valor = exp.getValor(entorno)
                     if valor == None:
@@ -243,7 +243,7 @@ class ImprimirLn(Instruccion):
             tipo_tmp = exp.getTipo(entorno)
             if tipo_tmp is not None:
                 if tipo_tmp.esArreglo():                    
-                    imprimirArrlego(exp, entorno, cadena)
+                    imprimirArreglo(exp, entorno, cadena)
                 else:
                     valor = exp.getValor(entorno)
                     if valor == None:
@@ -1061,9 +1061,9 @@ class Mayor(Expresion):
         tipoI = self.expresionI.getTipo(entorno)
         tipoD = self.expresionI.getTipo(entorno)
         if tipoI.esNumerico() and tipoD.esNumerico():
-            return tipoI
+            return Tipo(TipoPrimitivo.BOOL)
         if tipoI.esCadena() and tipoD.esCadena():
-            return tipoI
+            return Tipo(TipoPrimitivo.BOOL)
         global_utils.registrySemanticError('>','No es posible realizar la operación ' + tipoI.getNombre() + ' > '+ tipoD.getNombre() , self.linea, self.columna)
         return Tipo(TipoPrimitivo.ERROR)
 
@@ -1079,6 +1079,9 @@ class Mayor(Expresion):
         if tipo_tmp.esCadena():
             self.valor = valorI > valorD
             return self.valor
+        if tipo_tmp.esBool():
+            self.valor = valorI > valorD
+            return self.valor               
 
 class MayorIgual(Expresion):
     def __init__(self, expresionI, expresionD, linea, columna):
@@ -1091,9 +1094,9 @@ class MayorIgual(Expresion):
         tipoI = self.expresionI.getTipo(entorno)
         tipoD = self.expresionI.getTipo(entorno)
         if tipoI.esNumerico() and tipoD.esNumerico():
-            return tipoI
+            return Tipo(TipoPrimitivo.BOOL)
         if tipoI.esCadena() and tipoD.esCadena():
-            return tipoI
+            return Tipo(TipoPrimitivo.BOOL)
         global_utils.registrySemanticError('>=','No es posible realizar la operación ' + tipoI.getNombre() + ' >= '+ tipoD.getNombre() , self.linea, self.columna)
         return Tipo(TipoPrimitivo.ERROR)
 
@@ -1108,7 +1111,10 @@ class MayorIgual(Expresion):
             return self.valor
         if tipo_tmp.esCadena():
             self.valor = valorI >= valorD
-            return self.valor            
+            return self.valor 
+        if tipo_tmp.esBool():
+            self.valor = valorI >= valorD
+            return self.valor                          
 
 class Menor(Expresion):
     def __init__(self, expresionI, expresionD, linea, columna):
@@ -1121,9 +1127,9 @@ class Menor(Expresion):
         tipoI = self.expresionI.getTipo(entorno)
         tipoD = self.expresionI.getTipo(entorno)
         if tipoI.esNumerico() and tipoD.esNumerico():
-            return tipoI
+            return Tipo(TipoPrimitivo.BOOL)
         if tipoI.esCadena() and tipoD.esCadena():
-            return tipoI
+            return Tipo(TipoPrimitivo.BOOL)
         global_utils.registrySemanticError('<','No es posible realizar la operación ' + tipoI.getNombre() + ' < '+ tipoD.getNombre() , self.linea, self.columna)
         return Tipo(TipoPrimitivo.ERROR)
 
@@ -1138,7 +1144,11 @@ class Menor(Expresion):
             return self.valor
         if tipo_tmp.esCadena():
             self.valor = valorI < valorD
-            return self.valor    
+            return self.valor  
+        if tipo_tmp.esBool():
+            self.valor = valorI < valorD
+            return self.valor              
+
 
 class MenorIgual(Expresion):
     def __init__(self, expresionI, expresionD, linea, columna):
@@ -1151,9 +1161,9 @@ class MenorIgual(Expresion):
         tipoI = self.expresionI.getTipo(entorno)
         tipoD = self.expresionI.getTipo(entorno)
         if tipoI.esNumerico() and tipoD.esNumerico():
-            return tipoI
+            return Tipo(TipoPrimitivo.BOOL)
         if tipoI.esCadena() and tipoD.esCadena():
-            return tipoI
+            return Tipo(TipoPrimitivo.BOOL)            
         global_utils.registrySemanticError('<=','No es posible realizar la operación ' + tipoI.getNombre() + ' <= '+ tipoD.getNombre() , self.linea, self.columna)
         return Tipo(TipoPrimitivo.ERROR)
 
@@ -1168,7 +1178,10 @@ class MenorIgual(Expresion):
             return self.valor
         if tipo_tmp.esCadena():
             self.valor = valorI <= valorD
-            return self.valor   
+            return self.valor  
+        if tipo_tmp.esBool():
+            self.valor = valorI <= valorD
+            return self.valor               
 
 class Igualigual(Expresion):
     def __init__(self, expresionI, expresionD, linea, columna):
@@ -1183,9 +1196,11 @@ class Igualigual(Expresion):
         if tipoI == None or tipoD == None:
             return Tipo(TipoPrimitivo.ERROR)    
         if tipoI.esNumerico() and tipoD.esNumerico():
-            return tipoI
+            return Tipo(TipoPrimitivo.BOOL)
         if tipoI.esCadena() and tipoD.esCadena():
-            return tipoI
+            return Tipo(TipoPrimitivo.BOOL)
+        if tipoI.compararTipo(tipoD):
+            return Tipo(TipoPrimitivo.BOOL)
         global_utils.registrySemanticError('==','No es posible realizar la operación ' + tipoI.getNombre() + ' == '+ tipoD.getNombre() , self.linea, self.columna)
         return Tipo(TipoPrimitivo.ERROR)
 
@@ -1201,6 +1216,9 @@ class Igualigual(Expresion):
         if tipo_tmp.esCadena():
             self.valor = str(valorI) == str(valorD)
             return self.valor 
+        if tipo_tmp.esBool():
+            self.valor = valorI == valorD
+            return self.valor            
         return False 
 
 
@@ -1215,9 +1233,11 @@ class Diferente(Expresion):
         tipoI = self.expresionI.getTipo(entorno)
         tipoD = self.expresionI.getTipo(entorno)
         if tipoI.esNumerico() and tipoD.esNumerico():
-            return tipoI
+            return Tipo(TipoPrimitivo.BOOL)
         if tipoI.esCadena() and tipoD.esCadena():
-            return tipoI
+            return Tipo(TipoPrimitivo.BOOL)
+        if tipoI.compararTipo(tipoD):
+            return Tipo(TipoPrimitivo.BOOL)            
         global_utils.registrySemanticError('!=','No es posible realizar la operación ' + tipoI.getNombre() + ' != '+ tipoD.getNombre() , self.linea, self.columna)
         return Tipo(TipoPrimitivo.ERROR)
 
@@ -1233,6 +1253,9 @@ class Diferente(Expresion):
         if tipo_tmp.esCadena():
             self.valor = str(valorI) != str(valorD)
             return self.valor 
+        if tipo_tmp.esBool():
+            self.valor = valorI != valorD
+            return self.valor                
         return False            
 
 class Or(Expresion):
@@ -1246,7 +1269,7 @@ class Or(Expresion):
         tipoI = self.expresionI.getTipo(entorno)
         tipoD = self.expresionD.getTipo(entorno)
         if tipoI.esBool() and tipoD.esBool():
-            return tipoI
+            return Tipo(TipoPrimitivo.BOOL)
         return Tipo(TipoPrimitivo.Error)
     
     def getValor(self, entorno):
@@ -1269,7 +1292,7 @@ class And(Expresion):
         tipoI = self.expresionI.getTipo(entorno)
         tipoD = self.expresionD.getTipo(entorno)
         if tipoI.esBool() and tipoD.esBool():
-            return tipoI
+            return Tipo(TipoPrimitivo.BOOL)
         return Tipo(TipoPrimitivo.Error)
     
     def getValor(self, entorno):
@@ -1290,7 +1313,7 @@ class Not(Expresion):
     def getTipo(self, entorno):
         tipo = self.expresion.getTipo(entorno)
         if tipo.esBool():
-            return tipo
+            return Tipo(TipoPrimitivo.BOOL)
         return Tipo(TipoPrimitivo.ERROR)
     
     def getValor(self, entorno):
