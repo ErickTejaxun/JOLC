@@ -6,9 +6,9 @@ from json import JSONEncoder
 import AST as AST
 import os
 
+EntornoGlobal = None
 
 app = Flask(__name__)
-
 
 @app.route("/")# de esta forma le indicamos la ruta para acceder a esta pagina. 'Decoramos' la funcion. 
 def home():
@@ -16,6 +16,7 @@ def home():
 
 @app.route("/analyze", methods=["POST","GET"])
 def analyze():
+    global EntornoGlobal
     if request.method == "POST":  
         AST.consola = []      
         global_utils.iniciar()
@@ -23,6 +24,7 @@ def analyze():
         raiz = parse(inpt) 
         if raiz is not None:
             entornoGlobal  = AST.Entorno(None)
+            EntornoGlobal = entornoGlobal
             raiz.ejecutar(entornoGlobal) 
             if len(global_utils._errors)>0:
                 return jsonify(output=AST.consola, errores=True)
@@ -50,13 +52,20 @@ def reports():
 
 @app.route("/errors" , methods=["POST"])
 def errors():
+    global EntornoGlobal
     if request.method == "POST":
         errores = []
         for err in global_utils._errors:
             errores.append(json.loads(err.toJSON()))
         #print('Errores')
         #print(errores)
-        return jsonify(errors=errores)
+        simbolos = []
+        indice = 0
+        for simb in EntornoGlobal.tabla.tabla: 
+            var = EntornoGlobal.tabla.tabla.get(simb)           
+            simbolos.append({"index": indice, "nombre": var.id, "tipo": var.tipo.getNombre(), "rol" : var.getRol(), "ambito": "Global", "linea": var.linea, "columna": var.columna  })
+            indice += 1
+        return jsonify(errors=errores,tabla = simbolos)
 
 @app.route('/output/')
 def output(inpt):

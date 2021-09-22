@@ -6,14 +6,14 @@ from datetime import date
 # Errors 
 _error_counter = 0
 _file_ = ''
-
+entornoGlobal = None
 
 
 
 class Error():
     def __init__(self, id, type, desc, line, column):
         global _error_counter
-        global _file
+        global _file_
         self.index = _error_counter
         self.id = id
         self.type = type
@@ -42,10 +42,11 @@ class Singlenton(metaclass=SinglentonMeta):
 
     def iniciar(self):
         global  _error_counter
-        global  _file_
+        global  _file_        
         _error_counter = 0
-        _file_ = ''
+        _file_ = ''        
         self._errors = []
+    
 
     def registryError(self, id, desc, line, column):
         self._errors.append(Error(id, type, desc, line, column))

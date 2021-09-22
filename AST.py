@@ -115,7 +115,13 @@ class Simbolo():
 
     def toJSON(self):
         return json.dumps(self, default=lambda o: o.__dict__, 
-            sort_keys=True, indent=2)  
+            sort_keys=True, indent=2)
+
+    def getRol(self):
+        if self.rol == Rol.FUNCION:
+            return 'funcion'
+        if self.rol == Rol.VAR:
+            return 'variable'              
 
 class FuncionSimbolo(Simbolo):
     def __init__(self, id, parametros, instrucciones, linea, columna):
@@ -125,6 +131,7 @@ class FuncionSimbolo(Simbolo):
         self.linea = linea 
         self.columna = columna 
         self.instrucciones = instrucciones
+        self.tipo = Tipo(TipoPrimitivo.DINAMICO)
 
     def getTipo(self, entorno):
         tmp = self.instrucciones.ejecutar(entorno)
@@ -133,7 +140,14 @@ class FuncionSimbolo(Simbolo):
 
     def toJSON(self):
         return json.dumps(self, default=lambda o: o.__dict__, 
-            sort_keys=True, indent=2)       
+            sort_keys=True, indent=2)
+    def getRol(self):
+        if self.rol == Rol.FUNCION:
+            return 'funcion'
+        if self.rol == Rol.VAR:
+            return 'variable'
+
+
 
 '''Tabla de símbolos -------------------------------------------'''
 class TablaSimbolo():

@@ -875,6 +875,11 @@ def p_sqrt(t):
     '''sqrt : SQRT PARIZQ e PARDER'''
     t[0] = AST.Sqrt(t[3], t.lineno(1),0)
 
+def p_acceso(t):
+    ''' acceso : e '''
+    #t[0] = AST.Acceso(t[1],t[3], t.lineno(1), 0)
+
+
 ## Expresion --------------- e --> expresiones
 def p_expresion_parentesis(t):
     '''e : PARIZQ e PARDER'''

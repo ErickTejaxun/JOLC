@@ -25,16 +25,16 @@
                   <h3 class="display-4">Tabla de símbolos</h3>
                 </div>
                 <div class="row">
-                  <table id="tablaSimbolos">
-                    <thead>
+                  <table id="tablaSimbolos"  class="cell-border compact stripe">
+                    <thead class="thead-dark">
                       <tr>
                         <th>#</th>
-                        <th>ID</th>
+                        <th>Id</th>
                         <th>Tipo</th>
-                        <th>Entorno</th>
+                        <th>Rol</th>
+                        <th>Ámbito</th>
                         <th>Línea</th>
-                        <th>Columnas</th>
-                        <th>Valor</th>
+                        <th>Columna</th>
                       </tr>
                     </thead>
                   </table>
@@ -74,18 +74,18 @@
                 </div>
               </div>
             </div>
-            <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">
-              Errores
+            <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">              
+              <div class="card" style="width: 18rem;">
+                <img class="card-img-top" src="statics/ast.jpg" alt="Card image cap">
+                <div class="card-body">
+                  <p class="card-text">AST ultima ejecución</p>
+                </div>
+              </div>              
             </div>
           </div>
     </div>       
 </main>
 <script type="text/javascript">
-  var tablaSimbolos = $('#tablaSimbolos').DataTable({
-    "paging":   false,
-    "ordering": false,
-    "info":     false   
-  });
 
   var tablaErrores = $('#tablaErrores').DataTable({
     "paging":   true,            
@@ -114,5 +114,35 @@
         { "data": "file"}
       ]
   });  
+
+
+
+  var tablaSimbolos = $('#tablaSimbolos').DataTable({
+    "paging":   true,            
+    "scrollX": true,
+    "select": true,
+    "search": false,
+    "dom":'<"toolbar">frtip',
+    "ajax": 
+    {
+      "url": "/errors",
+      "type": "POST",
+      "dataSrc": function(data)
+      {        
+        console.log(data);
+        return data.tabla;
+      }
+    },        
+    "columns": 
+      [      
+        { "data": "index"},
+        { "data": "nombre" },
+        { "data": "tipo"},
+        { "data": "rol"},
+        { "data": "ambito"},
+        { "data": "linea"},
+        { "data": "columna"}
+      ]
+  });    
 </script>
 {% endblock %}
