@@ -307,7 +307,7 @@ class Imprimir(Instruccion):
             if tipo_tmp is not None:
                 if tipo_tmp.esArreglo():                    
                     cadena = self.imprimirArreglo(exp, entorno, cadena)
-                else:
+                elif not tipo_tmp.esError():
                     valor = exp.getValor(entorno)
                     if valor == None:
                         valor = 'nothing'
@@ -321,7 +321,7 @@ class Imprimir(Instruccion):
         for i in valor:
             if i.tipo.esArreglo():
                 cadena = self.imprimirArreglo(i, entorno, cadena)
-            else:                           
+            elif not i.tipo.esError():                           
                 cadena = str(cadena) + str(i.valor)
         return cadena
         
@@ -339,8 +339,8 @@ class ImprimirLn(Instruccion):
                 tipo_tmp = exp.getTipo(entorno)
                 if tipo_tmp is not None:                
                     if tipo_tmp.esArreglo():                    
-                        cadena = '[' + self.imprimirArreglo(exp, entorno, cadena) + ']'
-                    else:
+                        cadena = '[' + self.imprimirArreglo(exp, entorno, cadena) + ']'                        
+                    elif not tipo_tmp.esError():
                         valor = exp.getValor(entorno)
                         if valor == None:
                             valor = 'nothing'
@@ -351,7 +351,7 @@ class ImprimirLn(Instruccion):
                 if tipo_tmp is not None:                
                     if tipo_tmp.esArreglo():                    
                         cadena = '[' + self.imprimirArreglo(exp, entorno, cadena) + ']'
-                    else:                        
+                    elif not tipo_tmp.esError():                        
                         if valor == None:
                             valor = 'nothing'
                         cadena = str(cadena) + str(valor)                
@@ -364,7 +364,7 @@ class ImprimirLn(Instruccion):
             for i in valor:
                 if i.tipo.esArreglo():                
                     cadena = '[' + self.imprimirArreglo(i, entorno, cadena) + ']'
-                else:
+                elif not i.tipo.esError():
                     if len(cadena) > 0:
                         if cadena[len(cadena)-1] !='[':
                             cadena = str(cadena) + ',' +  str(i.valor)            
@@ -380,7 +380,7 @@ class ImprimirLn(Instruccion):
             for i in valor:
                 if i.tipo.esArreglo():                
                     cadena = cadena + '[' + self.imprimirArreglo(i, entorno, cadena)+ ']'
-                else:
+                elif not i.tipo.esError():
                     if len(cadena) > 0:
                         if cadena[len(cadena)-1] !='[':
                             cadena = str(cadena) + ',' + str(i.valor)
