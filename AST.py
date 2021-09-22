@@ -543,14 +543,19 @@ class Concatenacion(Expresion):
         return cadena
     
     def recorrer(self,valor, cadena):
-        for i in valor:
-            if isinstance(i, Simbolo):
-                cadena = cadena + str(i.valor)
-            elif isinstance(i,list):
-                self.recorrer(i, cadena)
-            else:
-                cadena = cadena + str(i)
-        return cadena
+        if isinstance(valor, str) or isinstance(valor, list ):
+            for i in valor:
+                if isinstance(i, Simbolo):
+                    cadena = cadena + str(i.valor)
+                elif isinstance(i,list):
+                    self.recorrer(i, cadena)
+                else:
+                    cadena = cadena + str(i)
+            return cadena
+        else:
+            return str(valor)
+
+        
         
 
 class Resta(Expresion):
