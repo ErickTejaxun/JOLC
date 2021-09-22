@@ -110,10 +110,10 @@ class Simbolo():
         return json.dumps(self, default=lambda o: o.__dict__, 
             sort_keys=True, indent=2)  
 
-class Funcion(Simbolo)            :
+class FuncionSimbolo(Simbolo):
     def __init__(self, id, parametros, instrucciones, linea, columna):
         self.id = id 
-        self.parametros 
+        self.parametros = parametros
         self.rol = Rol.FUNCION
         self.linea = linea 
         self.columna = columna 
@@ -134,7 +134,23 @@ class TablaSimbolo():
         self.consola = []
 
     def registrarSimbolo(self, simbolo):
-        self.tabla[simbolo.id] = simbolo
+        tmp_simbolo = self.tabla.get(simbolo.id)
+        if tmp_simbolo is not None:
+            if tmp_simbolo.rol == simbolo.rol:
+                if tmp_simbolo.rol == Rol.VAR:
+                    global_utils.registrySemanticError('Declaracion', 'Ya se ha declarado previamente una variable con el nombre '+ simbolo.id, simbolo.linea, simbolo.columna)
+                    return 
+                else:
+                    if len(simbolo.parametros) == len(tmp_simbolo.parametros):                        
+                        global_utils.registrySemanticError('Declaracion', 'Ya se ha declarado previamente una función con el nombre '+ simbolo.id + ' con ' +str(len(simbolo.parametros)) + ' parámetros.', simbolo.linea, simbolo.columna)
+                        return                     
+                    else:
+                        self.tabla[simbolo.id] = simbolo                    
+            else:
+                self.tabla[simbolo.id] = simbolo
+
+        else:
+            self.tabla[simbolo.id] = simbolo
     
     def getSimbolo(self, id):
         entornoActual = self
@@ -502,7 +518,7 @@ class Funcion(Instruccion):
 
     def ejecutar(self, entorno):
         # Creamos el símbolo de tipo funcion
-        funcion = Funcion(self.id, self.parametros_formales, self.instrucciones, self.linea, self.columna)
+        funcion = FuncionSimbolo(self.id, self.parametros_formales, self.instrucciones, self.linea, self.columna)
         entorno.insertSimbolo(funcion)
 
 ## Expresion -----------------------------------------------------
