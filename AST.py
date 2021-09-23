@@ -168,15 +168,19 @@ class EstructuraSimbolo(Simbolo):
     def getRol(self):
         return 'Struct ' + self.id
 
-    def generarInstancia(self, id, valores):
-        instancia = Simbolo(id, self.getTipo(), None, self.linea, self.columna)
-        instancia.mutable = mutable
+    def generarInstancia(self, id, valores, entorno):        
+        instancia = Simbolo(id, self.getTipo(entorno), None, self.linea, self.columna)
+        instancia.mutable = self.mutable
         entorno = Entorno(None)
         contador = 0
-        for i in valores:
-            self.atributos[contador].expresion = i
-            self.atributos[contador].expresion.ejecutar(entorno)
-            contador += 1
+        if len(valores) == len(self.atributos):
+            for i in valores:
+                self.atributos[contador].expresion = i
+                self.atributos[contador].ejecutar(entorno)
+                contador += 1
+        else:
+            global_utils.registrySemanticError('Instancia estructura', 'el número de parametros no coincide con la definicion.' + self.id, self.linea, self.columna)
+        return instancia
 
 
 
@@ -2190,9 +2194,18 @@ class Llamada(Expresion):
                         nuevoEntorno.insertSimbolo(simbolo)                    
                     indice +=1
             valor = funcion_a_llamar.instrucciones.ejecutar(nuevoEntorno) 
-            return valor
+            return valor        
         else:
-            global_utils.registrySemanticError('llamada','función ' +self.id + ' no declarada.' , self.linea, self.columna) 
+            contructor_estructura = entorno.getSimbolo(self.id)
+            if contructor_estructura is None:
+                global_utils.registrySemanticError('llamada','función ' +self.id + ' no declarada.' , self.linea, self.columna) 
+                return None
+            else:
+                if isinstance(contructor_estructura, EstructuraSimbolo):
+                    #(self, id, valores):
+                    instancia = contructor_estructura.generarInstancia('',self.parametros, entorno)
+                    return instancia
+
         
 class Acceso(Expresion):
     def __init__(self, expresion, dim_lista, linea, columna):

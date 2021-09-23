@@ -345,3 +345,5 @@ placa;
 color::String;
 tipo;
 end;
+
+p1 = Personaje("Erick", 18, "Mensaje");
