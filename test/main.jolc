@@ -321,3 +321,9 @@ println(animal == "Perro" ? 20 : "No"); # No
 #function ack(m, n) {
 # return m === 0 ? n + 1 : ack(m - 1, n === 0  ? 1 : ack(m, n - 1));
 #}
+
+
+a = [1,2,[10,11,12]];
+print(a);
+ 
+a[1] = [99,98,97,96];

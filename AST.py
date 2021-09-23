@@ -188,15 +188,30 @@ class TablaSimbolo():
     
     def imprimirln(self, valor):        
         global consola
-        consola.append(str(valor))
-
-    def imprimir(self, valor):
-        global consola
-        if len(consola) > 0:
-            texto = consola[len(consola)-1]        
-            consola[len(consola)-1] = texto+str(valor)
-        else:             
+        if isinstance(valor, list):
             consola.append(str(valor))
+        else:
+            consola.append(str(valor))
+    def imprimir(self, valor):
+        global consola                
+        if isinstance(valor, list):       
+            cadena = ''
+            for i in valor:
+                if instance(i, Simbolo):
+                    cadena = cadena + str(i.valor)
+                else:
+                    cadena = cadena + str
+            if len(consola) > 0:
+                texto = consola[len(consola)-1]        
+                consola[len(consola)-1] = texto+str(valor)
+            else:             
+                consola.append(str(valor))
+        else:            
+            if len(consola) > 0:
+                texto = consola[len(consola)-1]        
+                consola[len(consola)-1] = texto+str(valor)
+            else:             
+                consola.append(str(valor))
 
     def toJSON(self):
         return json.dumps(self, default=lambda o: o.__dict__, 
@@ -250,6 +265,8 @@ class Entorno():
             return Tipo(TipoPrimitivo.STRING)            
         if isinstance(valor, Simbolo):
             return valor.tipo
+        if isinstance(valor, list):
+            return Tipo(TipoPrimitivo.DINAMICO)
         return Tipo(TipoPrimitivo.ERROR)
 ### AST 
 class NodoAST(ABC):
@@ -342,27 +359,60 @@ class Imprimir(Instruccion):
     def ejecutar(self, entorno):
         cadena = ''
         for exp in self.lista_expresiones:
-            tipo_tmp = exp.getTipo(entorno)
-            if tipo_tmp is not None:
-                if tipo_tmp.esArreglo():                    
-                    cadena = self.imprimirArreglo(exp, entorno, cadena)
-                elif not tipo_tmp.esError():
-                    valor = exp.getValor(entorno)
-                    if valor == None:
-                        valor = 'nothing'
-                    cadena = str(cadena) + str(valor)
-        entorno.tabla.imprimir(cadena)
+            if not isinstance(exp, Llamada):
+                tipo_tmp = exp.getTipo(entorno)
+                if tipo_tmp is not None:                
+                    if tipo_tmp.esArreglo():                    
+                        cadena = '[' + self.imprimirArreglo(exp, entorno, cadena) + ']'                        
+                    elif not tipo_tmp.esError():
+                        valor = exp.getValor(entorno)
+                        if valor == None:
+                            valor = 'nothing'
+                        cadena = str(cadena) + str(valor)
+            else:
+                valor = exp.getValor(entorno)
+                tipo_tmp = entorno.obtenerTipo(valor)
+                if tipo_tmp is not None:                
+                    if tipo_tmp.esArreglo():                    
+                        cadena = '[' + self.imprimirArreglo(exp, entorno, cadena) + ']'
+                    elif not tipo_tmp.esError():                        
+                        if valor == None:
+                            valor = 'nothing'
+                        cadena = str(cadena) + str(valor)                
 
-    def imprimirArreglo(self, exp, entorno, cadena):        
-        valor = exp.getValor(entorno)
-        if valor is None:
+        entorno.tabla.imprimir(cadena) 
+
+    def imprimirArreglo(self, exp, entorno, cadena):  
+        if isinstance(exp, Simbolo):
             valor = exp.valor
-        for i in valor:
-            if i.tipo.esArreglo():
-                cadena = self.imprimirArreglo(i, entorno, cadena)
-            elif not i.tipo.esError():                           
-                cadena = str(cadena) + str(i.valor)
-        return cadena
+            for i in valor:
+                if i.tipo.esArreglo():                
+                    cadena = '[' + self.imprimirArreglo(i, entorno, cadena) + ']'
+                elif not i.tipo.esError():
+                    if len(cadena) > 0:
+                        if cadena[len(cadena)-1] !='[':
+                            cadena = str(cadena) + ',' +  str(i.valor)            
+                        else:
+                            cadena = str(cadena) + str(i.valor) 
+                    else:           
+                        cadena = str(cadena) + str(i.valor) 
+            return cadena
+        else:
+            valor = exp.getValor(entorno)
+            if valor is None:
+                valor = exp.valor
+            for i in valor:
+                if i.tipo.esArreglo():                
+                    cadena = cadena + '[' + self.imprimirArreglo(i, entorno, cadena)+ ']'
+                elif not i.tipo.esError():
+                    if len(cadena) > 0:
+                        if cadena[len(cadena)-1] !='[':
+                            cadena = str(cadena) + ',' + str(i.valor)
+                        else:        
+                            cadena = str(cadena) +  str(i.valor)
+                    else:
+                        cadena = str(cadena) +  str(i.valor)
+            return cadena
         
 
 class ImprimirLn(Instruccion):
@@ -2174,8 +2224,60 @@ class Acceso(Expresion):
                     global_utils.registrySemanticError('Acceso','El elemento no es un arreglo ' , self.linea, self.columna)
                     return None
         return val                
+
+class AsignacionArreglo(Instruccion):
+    def __init__(self, acceso, expresion, linea, columna):
+        self.acceso = acceso
+        self.expresion = expresion
+        self.linea = linea
+        self.columna = columna
     
+    def graficar(self, padre, grafo):
+        id = 'Nodo'+ str(hash(self)) 
+        grafo.node(id, 'asignacion-arreglo')  
+        grafo.edge(padre,id)        
+        self.acceso.graficar(id, grafo)
+        self.expresion.graficar(id, grafo)
 
-    
-
-
+    def ejecutar(self, entorno):
+        tipo_expresion = self.expresion.getTipo(entorno)
+        if tipo_expresion is None:
+            global_utils.registrySemanticError('Asignacion-arreglo','Error al obtener el valor de la expresión.' , self.linea, self.columna)
+            return
+        nuevo_valor = self.expresion.getValor(entorno)
+        tipo_real = tipo_expresion
+        if tipo_real.esDinamico():
+            tipo_real = entorno.obtenerTipo(nuevo_valor)        
+        self.dim_lista = self.acceso.dim_lista
+        simbolo = self.acceso.expresion.getValor(entorno)
+        valor = simbolo ##Tenemos el arreglo de valores
+        for dim in self.dim_lista:
+            tipo_dim = dim.getTipo(entorno)
+            if tipo_dim.esDinamico():
+                valor_dim = dim.getValor(entorno)
+                tipo_real = entorno.obtenerTipo(valor)
+                if tipo_real.esEntero():
+                    if isinstance(valor, list): 
+                        if valor_dim < len(valor):
+                            valor  = valor[valor_dim]                        
+                            val  = valor[valor_dim]
+                        else:
+                            global_utils.registrySemanticError('Acceso','El arreglo tiene un máximo de ' +str(len(valor)) , self.linea, self.columna)                        
+                    else:
+                        global_utils.registrySemanticError('Acceso','El elemento no es un arreglo ' , self.linea, self.columna)
+                        return None
+            elif tipo_dim.esEntero():
+                valor_dim = dim.getValor(entorno)
+                if isinstance(valor, list):                    
+                    if valor_dim < len(valor):                                        
+                        val  = valor[valor_dim]                                        
+                        valor = val
+                    else:
+                        global_utils.registrySemanticError('Acceso','El arreglo tiene un máximo de ' +str(len(valor)) , self.linea, self.columna)
+                        return None
+                else:
+                    global_utils.registrySemanticError('Acceso','El elemento no es un arreglo ' , self.linea, self.columna)
+                    return None
+        if valor is not None:
+            if isinstance(valor, Simbolo):                
+                valor.valor = nuevo_valor

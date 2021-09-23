@@ -559,10 +559,10 @@ precedence = (
     ('left','DOLAR'),
     ('left','MAS','MENOS'),
     ('left','POR','DIV'),    
-    ('left', 'POW'),
-    ('right', 'UMINUS'),
+    ('left', 'POW'),    
     ('left','PARIZQ', 'PARDER'),  
     ('left','BRACKETI', 'BRACKETD'),
+    ('right', 'UMINUS'),
     ('nonassoc', 'SI_SIMPLE')  
     )
 
@@ -636,7 +636,12 @@ def p_lista_instrucciones_11(t):
 def p_lista_instrucciones_12(t):
     '''lista_instrucciones : lista_instrucciones return'''
     t[1].agregarInstruccion(t[2])
-    t[0] = t[1]       
+    t[0] = t[1]   
+
+def p_lista_instrucciones_13(t):
+    '''lista_instrucciones : lista_instrucciones asignacion_arreglo'''
+    t[1].agregarInstruccion(t[2])
+    t[0] = t[1]          
 
 
 def p_lista_instrucciones_imprimir(t):
@@ -692,6 +697,12 @@ def p_lista_instrucciones_llamada(t):
 
 def p_lista_instrucciones_return(t):
     '''lista_instrucciones : return'''
+    t[0] = AST.Bloque(t.lineno(1), 0)
+    t[0].agregarInstruccion(t[1])            
+
+
+def p_lista_instrucciones_asignacion_arreglo(t):
+    '''lista_instrucciones : asignacion_arreglo'''
     t[0] = AST.Bloque(t.lineno(1), 0)
     t[0].agregarInstruccion(t[1])            
 
@@ -811,6 +822,10 @@ def p_tipo_string(t):
 def p_tipo_id(t):
     ''' tipo : ID ''' 
     t[0] = AST.Tipo(AST.TipoPrimitivo.STRUCT, t[1])
+
+def p_asignacion_arreglo_1(t):
+    ''' asignacion_arreglo : acceso IGUAL e PUNTOCOMA'''
+    t[0] = AST.AsignacionArreglo(t[1],t[3], t.lineno(1), 0)
 
 def p_instruccion_imprimirln(t):
     '''imprimirln : IMPRIMIRLN PARIZQ lista_e PARDER PUNTOCOMA '''
