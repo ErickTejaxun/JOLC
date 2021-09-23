@@ -2145,26 +2145,35 @@ class Acceso(Expresion):
             return None
         simbolo = self.expresion.getValor(entorno)
         valor = simbolo ##Tenemos el arreglo de valores
+        val = None
         for dim in self.dim_lista:
             tipo_dim = dim.getTipo(entorno)
             if tipo_dim.esDinamico():
                 valor_dim = dim.getValor(entorno)
                 tipo_real = entorno.obtenerTipo(valor)
                 if tipo_real.esEntero():
-                    if valor_dim < len(valor):
-                        val  = valor[valor_dim]
-                        return val
+                    if isinstance(valor, list): 
+                        if valor_dim < len(valor):
+                            valor  = valor[valor_dim]                        
+                            val  = valor[valor_dim]
+                        else:
+                            global_utils.registrySemanticError('Acceso','El arreglo tiene un máximo de ' +str(len(valor)) , self.linea, self.columna)                        
                     else:
-                        global_utils.registrySemanticError('Acceso','El arreglo tiene un máximo de ' +str(len(valor)) , self.linea, self.columna)
+                        global_utils.registrySemanticError('Acceso','El elemento no es un arreglo ' , self.linea, self.columna)
                         return None
             elif tipo_dim.esEntero():
                 valor_dim = dim.getValor(entorno)
-                if valor_dim < len(valor):
-                    val  = valor[valor_dim].valor
-                    return val
+                if isinstance(valor, list):                    
+                    if valor_dim < len(valor):                                        
+                        val  = valor[valor_dim].valor                                        
+                        valor = val
+                    else:
+                        global_utils.registrySemanticError('Acceso','El arreglo tiene un máximo de ' +str(len(valor)) , self.linea, self.columna)
+                        return None
                 else:
-                    global_utils.registrySemanticError('Acceso','El arreglo tiene un máximo de ' +str(len(valor)) , self.linea, self.columna)
-                    return None                
+                    global_utils.registrySemanticError('Acceso','El elemento no es un arreglo ' , self.linea, self.columna)
+                    return None
+        return val                
     
 
     
