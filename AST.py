@@ -735,7 +735,11 @@ class Suma(Expresion):
         self.columna = columna
 
     def graficar(self, padre, grafo):
-        id = 'Nodo'+ str(hash(self))    
+        id = 'Nodo'+ str(hash(self))  
+        grafo.node(id, 'suma')  
+        grafo.edge(padre,id)
+        self.expresionI.graficar(id,grafo)
+        self.expresionD.graficar(id,grafo)
     
     def getTipo(self, entorno):
         tipoI = self.expresionI.getTipo(entorno)
@@ -794,7 +798,11 @@ class Concatenacion(Expresion):
         self.columna = columna
 
     def graficar(self, padre, grafo):
-        id = 'Nodo'+ str(hash(self))        
+        id = 'Nodo'+ str(hash(self))  
+        grafo.node(id, 'concatenacion')  
+        grafo.edge(padre,id)
+        self.expresionI.graficar(id,grafo)
+        self.expresionD.graficar(id,grafo)              
     
     def getTipo(self, entorno):
         tipoI = self.expresionI.getTipo(entorno)
@@ -847,7 +855,11 @@ class Resta(Expresion):
         self.columna = columna
 
     def graficar(self, padre, grafo):
-        id = 'Nodo'+ str(hash(self))        
+        id = 'Nodo'+ str(hash(self))  
+        grafo.node(id, 'resta')  
+        grafo.edge(padre,id)
+        self.expresionI.graficar(id,grafo)
+        self.expresionD.graficar(id,grafo)                
     
     def getTipo(self, entorno):
         tipoI = self.expresionI.getTipo(entorno)
@@ -909,7 +921,11 @@ class Multiplicacion(Expresion):
         self.columna = columna
 
     def graficar(self, padre, grafo):
-        id = 'Nodo'+ str(hash(self))        
+        id = 'Nodo'+ str(hash(self)) 
+        grafo.node(id, 'multiplicacion')  
+        grafo.edge(padre,id)
+        self.expresionI.graficar(id,grafo)
+        self.expresionD.graficar(id,grafo)                 
     
     def getTipo(self, entorno):
         tipoI = self.expresionI.getTipo(entorno)
@@ -980,7 +996,11 @@ class Division(Expresion):
         self.columna = columna
 
     def graficar(self, padre, grafo):
-        id = 'Nodo'+ str(hash(self))        
+        id = 'Nodo'+ str(hash(self))
+        grafo.node(id, 'division')  
+        grafo.edge(padre,id)
+        self.expresionI.graficar(id,grafo)
+        self.expresionD.graficar(id,grafo)                 
     
     def getTipo(self, entorno):
         tipoI = self.expresionI.getTipo(entorno)
@@ -1039,7 +1059,11 @@ class Potencia(Expresion):
         self.columna = columna
 
     def graficar(self, padre, grafo):
-        id = 'Nodo'+ str(hash(self))        
+        id = 'Nodo'+ str(hash(self)) 
+        grafo.node(id, 'potencia')  
+        grafo.edge(padre,id)
+        self.expresionI.graficar(id,grafo)
+        self.expresionD.graficar(id,grafo)                
     
     def getTipo(self, entorno):
         tipoI = self.expresionI.getTipo(entorno)
@@ -1119,7 +1143,11 @@ class Modulo(Expresion):
         self.columna = columna
 
     def graficar(self, padre, grafo):
-        id = 'Nodo'+ str(hash(self))        
+        id = 'Nodo'+ str(hash(self))  
+        grafo.node(id, 'modulo')  
+        grafo.edge(padre,id)
+        self.expresionI.graficar(id,grafo)
+        self.expresionD.graficar(id,grafo)              
     
     def getTipo(self, entorno):
         tipoI = self.expresionI.getTipo(entorno)
@@ -1181,7 +1209,10 @@ class Negativo(Expresion):
         self.columna = columna
 
     def graficar(self, padre, grafo):
-        id = 'Nodo'+ str(hash(self))        
+        id = 'Nodo'+ str(hash(self))  
+        grafo.node(id, 'negativo')  
+        grafo.edge(padre,id)
+        self.expresion.graficar(id,grafo)                       
     
     def getTipo(self, entorno):
         tipo = self.expresion.getTipo(entorno)  
@@ -1241,7 +1272,9 @@ class Nulo(Expresion):
         self.tipo = Tipo(TipoPrimitivo.NULO,'')
 
     def graficar(self, padre, grafo):
-        id = 'Nodo'+ str(hash(self))        
+        id = 'Nodo'+ str(hash(self))
+        grafo.node(id, '[Exp] Nulo')  
+        grafo.edge(padre,id)                        
     
     def getValor(self, entorno):
         return self.valor
@@ -1256,7 +1289,9 @@ class Variable(Expresion):
         self.columna = columna
 
     def graficar(self, padre, grafo):
-        id = 'Nodo'+ str(hash(self))        
+        id = 'Nodo'+ str(hash(self)) 
+        grafo.node(id, '[Exp] Variable' + self.id)  
+        grafo.edge(padre,id)                 
     
     def getTipo(self, entorno):
         tmp_simbolo = entorno.getSimbolo(self.id)
@@ -1280,7 +1315,9 @@ class Entero(Expresion):
         self.tipo = Tipo(TipoPrimitivo.ENTERO,'')
 
     def graficar(self, padre, grafo):
-        id = 'Nodo'+ str(hash(self))        
+        id = 'Nodo'+ str(hash(self))  
+        grafo.node(id, '[Exp] Entero' + str(self.valor))  
+        grafo.edge(padre,id)                
     
     def getValor(self, entorno):
         return self.valor
@@ -1298,6 +1335,8 @@ class Float(Expresion):
 
     def graficar(self, padre, grafo):
         id = 'Nodo'+ str(hash(self))
+        grafo.node(id, '[Exp] Float' + str(self.valor))  
+        grafo.edge(padre,id)         
 
     def getValor(self, entorno):
         return self.valor
@@ -1314,7 +1353,9 @@ class Bool(Expresion):
         self.tipo = Tipo(TipoPrimitivo.BOOL,'')
         
     def graficar(self, padre, grafo):
-        id = 'Nodo'+ str(hash(self))        
+        id = 'Nodo'+ str(hash(self)) 
+        grafo.node(id, '[Exp] Bool' + str(self.valor))  
+        grafo.edge(padre,id)                   
     
     def getValor(self, entorno):
         return self.valor
@@ -1331,7 +1372,9 @@ class Char(Expresion):
         self.tipo = Tipo(TipoPrimitivo.CHAR,'')
 
     def graficar(self, padre, grafo):
-        id = 'Nodo'+ str(hash(self))        
+        id = 'Nodo'+ str(hash(self)) 
+        grafo.node(id, '[Exp] Char' + str(self.valor))  
+        grafo.edge(padre,id)                     
     
     def getValor(self, entorno):
         return self.valor
@@ -1347,7 +1390,9 @@ class String(Expresion):
         self.tipo = Tipo(TipoPrimitivo.STRING,'')
 
     def graficar(self, padre, grafo):
-        id = 'Nodo'+ str(hash(self))        
+        id = 'Nodo'+ str(hash(self))
+        grafo.node(id, '[Exp] String' + str(self.valor))  
+        grafo.edge(padre,id)                    
     
     def getValor(self, entorno):
         return self.valor
@@ -1362,7 +1407,10 @@ class Uppercase(Expresion):
         self.columna = columna
 
     def graficar(self, padre, grafo):
-        id = 'Nodo'+ str(hash(self))        
+        id = 'Nodo'+ str(hash(self))  
+        grafo.node(id, 'uppercase')  
+        grafo.edge(padre,id)      
+        self.expresion.graficar(id, grafo)          
     
     def getTipo(self, entorno):
         tipo_tmp = self.expresion.getTipo(entorno)
@@ -1385,7 +1433,10 @@ class Lowercase(Expresion):
         self.columna = columna
 
     def graficar(self, padre, grafo):
-        id = 'Nodo'+ str(hash(self))        
+        id = 'Nodo'+ str(hash(self)) 
+        grafo.node(id, 'lowercase')  
+        grafo.edge(padre,id)      
+        self.expresion.graficar(id, grafo)                  
     
     def getTipo(self, entorno):
         tipo_tmp = self.expresion.getTipo(entorno)
@@ -1409,7 +1460,10 @@ class Log10(Expresion):
         self.columan = columna
 
     def graficar(self, padre, grafo):
-        id = 'Nodo'+ str(hash(self))        
+        id = 'Nodo'+ str(hash(self))   
+        grafo.node(id, 'log10')  
+        grafo.edge(padre,id)      
+        self.expresion.graficar(id, grafo)              
     
     def getTipo(self, entorno):
         tipo_tmp = self.expresion.getTipo(entorno)
@@ -1434,7 +1488,10 @@ class Log(Expresion):
         self.columan = columna
 
     def graficar(self, padre, grafo):
-        id = 'Nodo'+ str(hash(self))        
+        id = 'Nodo'+ str(hash(self))  
+        grafo.node(id, 'log')  
+        grafo.edge(padre,id)      
+        self.expresion.graficar(id, grafo)              
     
     def getTipo(self, entorno):
         tipoI = self.expresionI.getTipo(entorno)
@@ -1462,7 +1519,10 @@ class Sin(Expresion):
         self.columan = columna
 
     def graficar(self, padre, grafo):
-        id = 'Nodo'+ str(hash(self))        
+        id = 'Nodo'+ str(hash(self))
+        grafo.node(id, 'sin')  
+        grafo.edge(padre,id)      
+        self.expresion.graficar(id, grafo)                 
     
     def getTipo(self, entorno):
         tipo = self.expresion.getTipo(entorno)        
@@ -1486,7 +1546,10 @@ class Cos(Expresion):
         self.columan = columna
 
     def graficar(self, padre, grafo):
-        id = 'Nodo'+ str(hash(self))        
+        id = 'Nodo'+ str(hash(self)) 
+        grafo.node(id, 'cos')  
+        grafo.edge(padre,id)      
+        self.expresion.graficar(id, grafo)                 
     
     def getTipo(self, entorno):
         tipo = self.expresion.getTipo(entorno)        
@@ -1509,7 +1572,10 @@ class Tan(Expresion):
         self.columan = columna
 
     def graficar(self, padre, grafo):
-        id = 'Nodo'+ str(hash(self))        
+        id = 'Nodo'+ str(hash(self)) 
+        grafo.node(id, 'tan')  
+        grafo.edge(padre,id)      
+        self.expresion.graficar(id, grafo)               
     
     def getTipo(self, entorno):
         tipo = self.expresion.getTipo(entorno)        
@@ -1532,7 +1598,10 @@ class Sqrt(Expresion):
         self.columan = columna
 
     def graficar(self, padre, grafo):
-        id = 'Nodo'+ str(hash(self))        
+        id = 'Nodo'+ str(hash(self))
+        grafo.node(id, 'sqrt')  
+        grafo.edge(padre,id)      
+        self.expresion.graficar(id, grafo)                
     
     def getTipo(self, entorno):
         tipo = self.expresion.getTipo(entorno)        
@@ -1557,7 +1626,11 @@ class Mayor(Expresion):
         self.columna = columna
 
     def graficar(self, padre, grafo):
-        id = 'Nodo'+ str(hash(self))        
+        id = 'Nodo'+ str(hash(self))  
+        grafo.node(id, 'mayor')  
+        grafo.edge(padre,id)      
+        self.expresionI.graficar(id, grafo)               
+        self.expresionD.graficar(id, grafo) 
     
     def getTipo(self, entorno):
         tipoI = self.expresionI.getTipo(entorno)
@@ -1593,7 +1666,11 @@ class MayorIgual(Expresion):
         self.columna = columna
 
     def graficar(self, padre, grafo):
-        id = 'Nodo'+ str(hash(self))        
+        id = 'Nodo'+ str(hash(self)) 
+        grafo.node(id, 'mayor-igual')  
+        grafo.edge(padre,id)      
+        self.expresionI.graficar(id, grafo)               
+        self.expresionD.graficar(id, grafo)                
     
     def getTipo(self, entorno):
         tipoI = self.expresionI.getTipo(entorno)
@@ -1629,7 +1706,11 @@ class Menor(Expresion):
         self.columna = columna
 
     def graficar(self, padre, grafo):
-        id = 'Nodo'+ str(hash(self))        
+        id = 'Nodo'+ str(hash(self)) 
+        grafo.node(id, 'menor')  
+        grafo.edge(padre,id)      
+        self.expresionI.graficar(id, grafo)               
+        self.expresionD.graficar(id, grafo)                
     
     def getTipo(self, entorno):
         tipoI = self.expresionI.getTipo(entorno)
@@ -1666,7 +1747,11 @@ class MenorIgual(Expresion):
         self.columna = columna
 
     def graficar(self, padre, grafo):
-        id = 'Nodo'+ str(hash(self))        
+        id = 'Nodo'+ str(hash(self)) 
+        grafo.node(id, 'menor-igual')  
+        grafo.edge(padre,id)      
+        self.expresionI.graficar(id, grafo)               
+        self.expresionD.graficar(id, grafo)                
     
     def getTipo(self, entorno):
         tipoI = self.expresionI.getTipo(entorno)
@@ -1702,7 +1787,11 @@ class Igualigual(Expresion):
         self.columna = columna
 
     def graficar(self, padre, grafo):
-        id = 'Nodo'+ str(hash(self))        
+        id = 'Nodo'+ str(hash(self)) 
+        grafo.node(id, 'igual')  
+        grafo.edge(padre,id)      
+        self.expresionI.graficar(id, grafo)               
+        self.expresionD.graficar(id, grafo)                
     
     def getTipo(self, entorno):
         tipoI = self.expresionI.getTipo(entorno)
@@ -1744,7 +1833,11 @@ class Diferente(Expresion):
         self.columna = columna
 
     def graficar(self, padre, grafo):
-        id = 'Nodo'+ str(hash(self))        
+        id = 'Nodo'+ str(hash(self))  
+        grafo.node(id, 'diferente')  
+        grafo.edge(padre,id)      
+        self.expresionI.graficar(id, grafo)               
+        self.expresionD.graficar(id, grafo)              
     
     def getTipo(self, entorno):
         tipoI = self.expresionI.getTipo(entorno)
@@ -1783,7 +1876,11 @@ class Or(Expresion):
         self.columna = columna
 
     def graficar(self, padre, grafo):
-        id = 'Nodo'+ str(hash(self))        
+        id = 'Nodo'+ str(hash(self))  
+        grafo.node(id, 'OR')  
+        grafo.edge(padre,id)      
+        self.expresionI.graficar(id, grafo)               
+        self.expresionD.graficar(id, grafo)              
     
     def getTipo(self, entorno):
         tipoI = self.expresionI.getTipo(entorno)
@@ -1809,7 +1906,11 @@ class And(Expresion):
         self.columna = columna
 
     def graficar(self, padre, grafo):
-        id = 'Nodo'+ str(hash(self))        
+        id = 'Nodo'+ str(hash(self)) 
+        grafo.node(id, 'AND')  
+        grafo.edge(padre,id)      
+        self.expresionI.graficar(id, grafo)               
+        self.expresionD.graficar(id, grafo)             
     
     def getTipo(self, entorno):
         tipoI = self.expresionI.getTipo(entorno)
@@ -1834,7 +1935,10 @@ class Not(Expresion):
         self.columna = columna
 
     def graficar(self, padre, grafo):
-        id = 'Nodo'+ str(hash(self))        
+        id = 'Nodo'+ str(hash(self)) 
+        grafo.node(id, 'NOT')  
+        grafo.edge(padre,id)      
+        self.expresion.graficar(id, grafo)        
     
     def getTipo(self, entorno):
         tipo = self.expresion.getTipo(entorno)
@@ -1858,7 +1962,11 @@ class Rango(Expresion):
         self.columna = columna
 
     def graficar(self, padre, grafo):
-        id = 'Nodo'+ str(hash(self))        
+        id = 'Nodo'+ str(hash(self)) 
+        grafo.node(id, 'rango')  
+        grafo.edge(padre,id)      
+        self.expresionInicio.graficar(id, grafo)               
+        self.expresionFinal.graficar(id, grafo)               
     
     def getTipo(self, entorno):
         tipoI = self.expresionInicio.getTipo(entorno)
@@ -1887,7 +1995,11 @@ class Arreglo(Expresion):
         self.columna = columna
 
     def graficar(self, padre, grafo):
-        id = 'Nodo'+ str(hash(self))        
+        id = 'Nodo'+ str(hash(self)) 
+        grafo.node(id, 'arreglo')  
+        grafo.edge(padre,id)   
+        for exp in self.lista:   
+            exp.graficar(id, grafo)        
     
     def getTipo(self, entorno):
         return Tipo(TipoPrimitivo.ARREGLO)
@@ -1915,7 +2027,12 @@ class Ternario(Expresion):
         self.columna = columna 
 
     def graficar(self, padre, grafo):
-        id = 'Nodo'+ str(hash(self))        
+        id = 'Nodo'+ str(hash(self)) 
+        grafo.node(id, 'ternario')  
+        grafo.edge(padre,id)    
+        self.condicion.graficar(id, grafo)
+        self.expV.graficar(id, grafo)
+        self.expF.graficar(id, grafo)
 
     def getTipo(self, entorno):
         tipo_valor = self.condicion.getTipo(entorno)
@@ -1953,7 +2070,14 @@ class Llamada(Expresion):
         self.columna = columna
 
     def graficar(self, padre, grafo):
-        id = 'Nodo'+ str(hash(self))    
+        id = 'Nodo'+ str(hash(self)) 
+        grafo.node(id, 'llamada [ID] ' +self.id)  
+        grafo.edge(padre,id)
+        if self.parametros is not None:
+            for i in self.parametros:
+                i.graficar(id, grafo)
+
+
 
     def getTipo(self, entorno):
         return Tipo(TipoPrimitivo.DINAMICO)
