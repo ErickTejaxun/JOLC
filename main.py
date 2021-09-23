@@ -1,13 +1,15 @@
 from flask import Flask, redirect, url_for, render_template, request, jsonify
+from flask import send_file, current_app as app
 from gramatica import parse
 from singlenton import global_utils, Error
 import json
 from json import JSONEncoder
 import AST as AST
+import graphviz
 import os
 
 EntornoGlobal = None
-
+ArbolAnterior = None
 app = Flask(__name__)
 
 @app.route("/")# de esta forma le indicamos la ruta para acceder a esta pagina. 'Decoramos' la funcion. 
@@ -17,12 +19,14 @@ def home():
 @app.route("/analyze", methods=["POST","GET"])
 def analyze():
     global EntornoGlobal
+    global ArbolAnterior
     if request.method == "POST":  
         AST.consola = []      
         global_utils.iniciar()
         inpt = request.form["inpt"] 
         raiz = parse(inpt) 
         if raiz is not None:
+            ArbolAnterior = raiz
             entornoGlobal  = AST.Entorno(None)
             EntornoGlobal = entornoGlobal
             raiz.ejecutar(entornoGlobal) 
@@ -53,19 +57,36 @@ def reports():
 @app.route("/errors" , methods=["POST"])
 def errors():
     global EntornoGlobal
+    global ArbolAnterior
     if request.method == "POST":
         errores = []
         for err in global_utils._errors:
-            errores.append(json.loads(err.toJSON()))
-        #print('Errores')
-        #print(errores)
+            errores.append(json.loads(err.toJSON()))    
         simbolos = []
         indice = 0
         for simb in EntornoGlobal.tabla.tabla: 
             var = EntornoGlobal.tabla.tabla.get(simb)           
             simbolos.append({"index": indice, "nombre": var.id, "tipo": var.tipo.getNombre(), "rol" : var.getRol(), "ambito": "Global", "linea": var.linea, "columna": var.columna  })
             indice += 1
+        u = graphviz.Digraph(filename='rank_same.gv')
+        if ArbolAnterior is not None:
+            ArbolAnterior.graficar('Raiz',u)        
+        #print(u.source)
+        u.render('static/ast.gv', view=False)
         return jsonify(errors=errores,tabla = simbolos)
+
+
+@app.route("/descargar" , methods=["POST"])
+def descargar():
+    global EntornoGlobal
+    global ArbolAnterior
+    if request.method == "POST":
+        u = graphviz.Digraph(filename='rank_same.gv')
+        if ArbolAnterior is not None:
+            ArbolAnterior.graficar('Raiz',u)                
+            u.render('static/ast.gv', view=False)
+        path= os.getcwd() +"/static/ast.gv.pdf"        
+        return redirect("/static/ast.gv.pdf")
 
 @app.route('/output/')
 def output(inpt):
