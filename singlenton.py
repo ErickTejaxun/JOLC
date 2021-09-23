@@ -1,7 +1,7 @@
 import json
 from json import JSONEncoder
 from datetime import date
-
+from datetime import date
 
 # Errors 
 _error_counter = 0
@@ -21,6 +21,7 @@ class Error():
         self.line = line
         self.column = column
         self.file = _file_
+        self.hora = str(date.today())
         _error_counter = _error_counter + 1 
 
     def toJSON(self):

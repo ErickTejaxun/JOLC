@@ -67,12 +67,7 @@ def errors():
         for simb in EntornoGlobal.tabla.tabla: 
             var = EntornoGlobal.tabla.tabla.get(simb)           
             simbolos.append({"index": indice, "nombre": var.id, "tipo": var.tipo.getNombre(), "rol" : var.getRol(), "ambito": "Global", "linea": var.linea, "columna": var.columna  })
-            indice += 1
-        u = graphviz.Digraph(filename='rank_same.gv')
-        if ArbolAnterior is not None:
-            ArbolAnterior.graficar('Raiz',u)        
-        #print(u.source)
-        u.render('static/ast.gv', view=False)
+            indice += 1               
         return jsonify(errors=errores,tabla = simbolos)
 
 
