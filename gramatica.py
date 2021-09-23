@@ -562,6 +562,7 @@ precedence = (
     ('left', 'POW'),
     ('right', 'UMINUS'),
     ('left','PARIZQ', 'PARDER'),  
+    ('left','BRACKETI', 'BRACKETD'),
     ('nonassoc', 'SI_SIMPLE')  
     )
 
@@ -875,10 +876,20 @@ def p_sqrt(t):
     '''sqrt : SQRT PARIZQ e PARDER'''
     t[0] = AST.Sqrt(t[3], t.lineno(1),0)
 
-def p_acceso(t):
-    ''' acceso : e '''
-    #t[0] = AST.Acceso(t[1],t[3], t.lineno(1), 0)
+def p_acceso_arreglo(t):
+    ''' acceso : e dimension'''
+    t[0] = AST.Acceso(t[1],t[2], t.lineno(1), 0)
 
+
+def p_dimensiones_0(t):
+    ''' dimension : dimension BRACKETI e BRACKETD'''
+    t[0] = t[1]
+    t[0].append(t[3])
+
+def p_dimensiones_1(t):
+    ''' dimension : BRACKETI e BRACKETD'''
+    t[0] = []
+    t[0].append(t[2])
 
 ## Expresion --------------- e --> expresiones
 def p_expresion_parentesis(t):
@@ -991,7 +1002,11 @@ def p_expresion_and(t):
 
 def p_expresion_concatenar(t):
     '''e : e DOLAR e'''
-    t[0] =  AST.Concatenacion(t[1], t[3], t.lineno(1),0)    
+    t[0] =  AST.Concatenacion(t[1], t[3], t.lineno(1),0)   
+
+def p_expresion_acceso_1(t):
+    '''e : acceso'''
+    t[0] = t[1]
 
 def p_expresion_ternario_def(t):
     ''' ternario : e INTERROGACION e DPUNTO e '''

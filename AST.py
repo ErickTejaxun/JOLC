@@ -95,7 +95,7 @@ class Tipo():
     def esLlamada(self):
         return self.tipo == TipoPrimitivo.LLAMADA   
     def esDinamico(self):
-        return self.tipo == TipoPrimitivo.DINAMICO              
+        return self.tipo == TipoPrimitivo.DINAMICO or self.tipo == TipoPrimitivo.ARREGLO             
     def esNumerico(self):
         return self.tipo == TipoPrimitivo.ENTERO or self.tipo == TipoPrimitivo.FLOAT 
     def compararTipo(self, tipo):
@@ -2110,6 +2110,61 @@ class Llamada(Expresion):
         else:
             global_utils.registrySemanticError('llamada','función ' +self.id + ' no declarada.' , self.linea, self.columna) 
         
+class Acceso(Expresion):
+    def __init__(self, expresion, dim_lista, linea, columna):
+        self.expresion = expresion
+        self.dim_lista = dim_lista
+        self.linea = linea
+        self.columna = columna
+    
+    def graficar(self, padre, grafo):
+        id = 'Nodo'+ str(hash(self)) 
+        grafo.node(id, 'Acceso-Arreglo')  
+        grafo.edge(padre,id)        
+        self.expresion.graficar(id, grafo)
+        grafo.node(id+'posicion', 'Posicion')
+        grafo.edge(id,id+'posicion')        
+        for dim in self.dim_lista:
+            dim.graficar(id+'posicion', grafo)
+        
+    def getTipo(self, entorno):
+        tipo_exp = self.expresion.getTipo(entorno)
+        if tipo_exp is None:
+            global_utils.registrySemanticError('Acceso','Valor no válido de arreglo' , self.linea, self.columna)
+            return Tipo(TipoPrimitivo.ERROR)
+        #if tipo_exp.esCadena():
+        #    return tipo_exp
+        if tipo_exp.esDinamico():
+            return Tipo(TipoPrimitivo.DINAMICO)
+        global_utils.registrySemanticError('Acceso','Valor no válido de arreglo' , self.linea, self.columna)
+        return Tipo(TipoPrimitivo.ERROR)        
+    
+    def getValor(self, entorno):
+        tipo_tmp = self.getTipo(entorno)
+        if tipo_tmp.esError():
+            return None
+        simbolo = self.expresion.getValor(entorno)
+        valor = simbolo ##Tenemos el arreglo de valores
+        for dim in self.dim_lista:
+            tipo_dim = dim.getTipo(entorno)
+            if tipo_dim.esDinamico():
+                valor_dim = dim.getValor(entorno)
+                tipo_real = entorno.obtenerTipo(valor)
+                if tipo_real.esEntero():
+                    if valor_dim < len(valor):
+                        val  = valor[valor_dim]
+                        return val
+                    else:
+                        global_utils.registrySemanticError('Acceso','El arreglo tiene un máximo de ' +str(len(valor)) , self.linea, self.columna)
+                        return None
+            elif tipo_dim.esEntero():
+                valor_dim = dim.getValor(entorno)
+                if valor_dim < len(valor):
+                    val  = valor[valor_dim].valor
+                    return val
+                else:
+                    global_utils.registrySemanticError('Acceso','El arreglo tiene un máximo de ' +str(len(valor)) , self.linea, self.columna)
+                    return None                
     
 
     
