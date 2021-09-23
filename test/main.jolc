@@ -327,3 +327,21 @@ a = [1,2,[10,11,12]];
 print(a);
  
 a[1] = [99,98,97,96];
+
+a = [1,2,[10,11,12]];
+#println(a);
+a[0] = 200;
+println(a[2]*2);
+
+# Struct Inmutable
+struct Personaje
+nombre;
+edad::Int64;
+descripcion::String;
+end;
+# Struct Mutable
+mutable struct Carro
+placa;
+color::String;
+tipo;
+end;

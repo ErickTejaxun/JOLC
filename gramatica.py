@@ -77,7 +77,7 @@ tokens = (
     'TBOOL',
     'TCHAR',
     'TSTRING',
-    'CARACTER',
+    #'CARACTER',
     'IF',
     'ELSE',
     'ELSEIF',
@@ -89,8 +89,9 @@ tokens = (
     'FUNCTION',
     'END',
     'RETURN',
-    'INTERROGACION'
-
+    'INTERROGACION',
+    'STRUCT',
+    'MUTABLE',
 )
 
 
@@ -217,6 +218,16 @@ t_INITIAL_impresion_expresion_DPUNTO = r':'
 
 # ignored characters, tab and space
 t_INITIAL_impresion_ignore = " \t"
+
+def t_INITIAL_impresion_expresion_STRUCT(t):
+    r'struct'
+    imprimirEstado('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
+    return t 
+
+def t_INITIAL_impresion_expresion_MUTABLE(t):
+    r'mutable'
+    imprimirEstado('Estado : ' + str(t.lexer.lexstate)+'  Token : ' + str(t))
+    return t     
 
 def t_INITIAL_impresion_expresion_RETURN(t):
     r'return'
@@ -641,8 +652,18 @@ def p_lista_instrucciones_12(t):
 def p_lista_instrucciones_13(t):
     '''lista_instrucciones : lista_instrucciones asignacion_arreglo'''
     t[1].agregarInstruccion(t[2])
-    t[0] = t[1]          
+    t[0] = t[1]   
 
+def p_lista_instrucciones_14(t):
+    '''lista_instrucciones : lista_instrucciones struct'''
+    t[1].agregarInstruccion(t[2])
+    t[0] = t[1]              
+
+
+def p_lista_instrucciones_struct(t):
+    '''lista_instrucciones : struct'''
+    t[0] = AST.Bloque(t.lineno(1), 0)
+    t[0].agregarInstruccion(t[1])
 
 def p_lista_instrucciones_imprimir(t):
     '''lista_instrucciones : imprimir'''
@@ -768,6 +789,33 @@ def p_instruccion_elseif_2(t):
 def p_instruccion_while(t):
     ''' while : WHILE e lista_instrucciones END PUNTOCOMA'''
     t[0] = AST.While(t[2], t[3], t.lineno(1),0)
+
+
+def p_instruccion_struct_1(t):
+    ''' struct : STRUCT ID lista_atributos END PUNTOCOMA'''
+    t[0] = AST.Estructura(False, t[2], t[3], t.lineno(1),0)
+
+def p_instruccion_struct_2(t):
+    ''' struct : MUTABLE STRUCT ID lista_atributos END PUNTOCOMA'''
+    t[0] = AST.Estructura(True, t[3], t[4], t.lineno(1),0)
+
+def p_lista_atributos_1(t):
+    ''' lista_atributos : lista_atributos atributo '''
+    t[0] = t[1]
+    t[0].append(t[2])
+
+def p_lista_atributos_2(t):
+    ''' lista_atributos : atributo '''
+    t[0] = []
+    t[0].append(t[1])
+
+def p_atributo_1(t):
+    ''' atributo : ID PUNTOCOMA '''
+    t[0] = AST.Declaracion(t[1], None, None, t.lineno(1), 0)
+
+def p_atributo_2(t):
+    ''' atributo : ID DPUNTOS tipo PUNTOCOMA '''
+    t[0] = AST.Declaracion(t[1], None, t[3], t.lineno(1), 0)
 
 ## For
 def p_instruccion_for_1(t):

@@ -30,7 +30,7 @@ class TipoPrimitivo(Enum):
 
 class Rol(Enum):
     VAR = 10
-    FUNCION = 11
+    FUNCION = 11    
 
 NOMBRES = {
     1: 'Nulo',
@@ -110,6 +110,7 @@ class Simbolo():
         self.linea = linea
         self.columna = columna
         self.rol = Rol.VAR
+        self.mutable = True
     
     def getTipo(self):
         return self.tipo
@@ -147,6 +148,36 @@ class FuncionSimbolo(Simbolo):
             return 'funcion'
         if self.rol == Rol.VAR:
             return 'variable'
+
+class EstructuraSimbolo(Simbolo):
+    def __init__(self, id, atributos, mutable, linea, columna):
+        self.id = id 
+        self.atributos = atributos
+        self.linea = linea
+        self.columna = columna
+        self.mutable = mutable
+        self.tipo = Tipo(TipoPrimitivo.STRUCT, self.id)
+    
+    def getTipo(self, entorno):
+        return Tipo(TipoPrimitivo.STRUCT, self.id)
+
+    def toJSON(self):
+        return json.dumps(self, default=lambda o: o.__dict__, 
+            sort_keys=True, indent=2)
+
+    def getRol(self):
+        return 'Struct ' + self.id
+
+    def generarInstancia(self, id, valores):
+        instancia = Simbolo(id, self.getTipo(), None, self.linea, self.columna)
+        instancia.mutable = mutable
+        entorno = Entorno(None)
+        contador = 0
+        for i in valores:
+            self.atributos[contador].expresion = i
+            self.atributos[contador].expresion.ejecutar(entorno)
+            contador += 1
+
 
 
 
@@ -501,6 +532,9 @@ class Declaracion(Instruccion):
         grafo.node(id+self.id,'Id '+ self.id)                
         grafo.edge(id,id+self.id)
         grafo.edge(padre, id) 
+        if self.tipo is not None:
+            grafo.node(id+'tipo', '[Tipo]: ' + self.tipo.getNombre())
+            grafo.edge(id, id+'tipo')
         if self.expresion is not None:
             self.expresion.graficar(id, grafo)          
     
@@ -2281,3 +2315,25 @@ class AsignacionArreglo(Instruccion):
         if valor is not None:
             if isinstance(valor, Simbolo):                
                 valor.valor = nuevo_valor
+
+
+class Estructura(Instruccion):
+    def __init__(self, mutable, nombre, atributos, linea, columna):
+        self.mutable = mutable 
+        self.nombre = nombre 
+        self.atributos = atributos
+        self.linea = linea
+        self.columna = columna
+
+    def graficar(self, padre, grafo):
+        id = 'Nodo'+ str(hash(self)) 
+        grafo.node(id, 'estructura [Mutable] ' +str(self.mutable))  
+        grafo.edge(padre,id)        
+        if self.atributos is not None:            
+            for i in self.atributos:
+                i.graficar(id, grafo)   
+
+    def ejecutar(self, entorno):
+        simbolo = EstructuraSimbolo(self.nombre, self.atributos, self.mutable, self.linea, self.columna)
+        entorno.insertSimbolo(simbolo)
+        
