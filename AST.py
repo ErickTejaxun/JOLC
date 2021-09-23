@@ -450,8 +450,9 @@ class Declaracion(Instruccion):
         grafo.node(id, '(Inst)Declaracion')
         grafo.node(id+self.id,'Id '+ self.id)                
         grafo.edge(id,id+self.id)
-        grafo.edge(padre, id)        
-        self.expresion.graficar(id, grafo)          
+        grafo.edge(padre, id) 
+        if self.expresion is not None:
+            self.expresion.graficar(id, grafo)          
     
     def ejecutar(self, entorno):                
         val_tmp = entorno.tabla.getSimbolo(self.id)
@@ -499,7 +500,14 @@ class If(Instruccion):
         self.columna = columna
         
     def graficar(self, padre, grafo):
-        id = 'Nodo'+ str(hash(self))        
+        id = 'Nodo'+ str(hash(self)) 
+        grafo.node(id, 'if')
+        grafo.edge(padre, id) 
+        self.expresion.graficar(id, grafo)
+        self.bloque.graficar(id,grafo)
+        if self.sino is not None:
+            self.sino.graficar(id,grafo)
+        
 
     def ejecutar(self, entorno):
         #print('Ejecutando IF')
@@ -538,7 +546,11 @@ class While(Instruccion):
         self.columna = columna  
 
     def graficar(self, padre, grafo):
-        id = 'Nodo'+ str(hash(self))              
+        id = 'Nodo'+ str(hash(self))
+        grafo.node(id, 'while')
+        grafo.edge(padre, id) 
+        self.expresion.graficar(id, grafo)
+        self.bloque.graficar(id, grafo)
     
     def ejecutar(self, entorno):
         tipo_tmp = self.expresion.getTipo(entorno)
@@ -569,7 +581,13 @@ class For(Instruccion):
         self.bloque = bloque
 
     def graficar(self, padre, grafo):
-        id = 'Nodo'+ str(hash(self))        
+        id = 'Nodo'+ str(hash(self))   
+        grafo.node(id, 'for')
+        grafo.edge(padre, id)
+        grafo.node(id+self.id,'[id] ' +self.id)
+        grafo.edge(id,id+self.id) 
+        self.expresion.graficar(id, grafo)
+        self.bloque.graficar(id, grafo)             
     
     def ejecutar(self, entorno):
         if isinstance(self.expresion, Rango):
@@ -633,7 +651,9 @@ class Break(Instruccion):
         self.columna = columna;
 
     def graficar(self, padre, grafo):
-        id = 'Nodo'+ str(hash(self))        
+        id = 'Nodo'+ str(hash(self))  
+        grafo.node(id, 'break')     
+        grafo.edge(padre, id)
     
     def ejecutar(self, entorno):
         return self
@@ -644,7 +664,10 @@ class Continue(Instruccion):
         self.columna = columna;
 
     def graficar(self, padre, grafo):
-        id = 'Nodo'+ str(hash(self))        
+        id = 'Nodo'+ str(hash(self))  
+        grafo.node(id,'continue') 
+        grafo.edge(padre, id)
+              
     
     def ejecutar(self, entorno):
         return self
@@ -656,7 +679,11 @@ class Retorno(Instruccion):
         self.columna = columna;
 
     def graficar(self, padre, grafo):
-        id = 'Nodo'+ str(hash(self))        
+        id = 'Nodo'+ str(hash(self))  
+        grafo.node(id, 'retorno')
+        grafo.edge(padre, id) 
+        self.expresion.graficar(id, grafo)
+              
     
     def ejecutar(self, entorno):
         if self.expresion is None:
@@ -678,7 +705,15 @@ class Funcion(Instruccion):
         self.columna = columna 
 
     def graficar(self, padre, grafo):
-        id = 'Nodo'+ str(hash(self))        
+        id = 'Nodo'+ str(hash(self))  
+        grafo.node(id, '[Dec] Funcion [ID]' + self.id)      
+        grafo.edge(padre, id)
+        if self.parametros_formales is not None:
+            for i in self.parametros_formales:
+                i.graficar(id, grafo)
+        if self.instrucciones is not None:
+            self.instrucciones.graficar(id, grafo)
+
 
     def ejecutar(self, entorno):
         # Creamos el símbolo de tipo funcion

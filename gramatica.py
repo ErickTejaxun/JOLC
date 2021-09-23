@@ -723,7 +723,7 @@ def p_parametro_1(t):
 
 def p_parametro_2(t):
     ''' parametro : ID DPUNTOS tipo'''
-    t[0] = AST.Declaracion(t[1], t[3], None, t.lineno(1), 0)
+    t[0] = AST.Declaracion(t[1], None, t[3], t.lineno(1), 0)
 
 def p_instruccion_declaracion(t):
     ''' declaracion : ID IGUAL e DPUNTOS tipo PUNTOCOMA'''
